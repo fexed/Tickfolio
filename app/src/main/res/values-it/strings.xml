@@ -1,0 +1,171 @@
+<resources>
+    <string name="app_name">Tickfolio</string>
+    <string name="widget_single_title">Checklist Tickfolio</string>
+    <string name="widget_single_description">Mostra una checklist e spunta gli elementi dalla schermata Home.</string>
+    <string name="widget_all_title">Checklist di Tickfolio</string>
+    <string name="widget_all_description">Sfoglia e apri le checklist salvate dalla schermata Home.</string>
+    <string name="widget_loading_checklist">Caricamento della checklist…</string>
+    <string name="widget_choose_checklist_hint">Tocca per scegliere una checklist.</string>
+    <string name="widget_no_checklists">Non ci sono ancora checklist. Tocca per aprire Tickfolio.</string>
+    <string name="widget_no_items">Questa checklist non contiene elementi.</string>
+    <string name="widget_completed_format">%1$d di %2$d completati</string>
+    <string name="widget_picker_title">Scegli una checklist per il widget</string>
+    <string name="widget_picker_empty">Crea prima una checklist in Tickfolio, poi aggiungi questo widget.</string>
+
+    <!-- Azioni generali -->
+    <string name="action_cancel">Annulla</string>
+    <string name="action_save">Salva</string>
+    <string name="action_create">Crea</string>
+    <string name="action_delete">Elimina</string>
+    <string name="action_edit">Modifica</string>
+    <string name="action_close">Chiudi</string>
+    <string name="action_clear">Cancella</string>
+    <string name="action_done">Fine</string>
+    <string name="action_back">Indietro</string>
+    <string name="action_search">Cerca</string>
+    <string name="action_more_options">Altre opzioni</string>
+
+    <!-- Schermata delle checklist -->
+    <string name="overview_title">Checklist</string>
+    <string name="search_hint_overview">Cerca per titolo, elementi o tag…</string>
+    <string name="clear_search_desc">Cancella la ricerca</string>
+    <string name="close_search_desc">Chiudi la ricerca</string>
+    <string name="search_desc">Cerca</string>
+    <string name="settings_desc">Impostazioni</string>
+    <string name="create_checklist_fab">Crea checklist</string>
+    <string name="empty_checklists_title">Nessuna checklist</string>
+    <string name="empty_checklists_found_title">Nessuna checklist trovata</string>
+    <string name="empty_checklists_subtitle">Crea un contesto per ciò che vuoi fare o ricordare</string>
+    <string name="empty_checklists_found_subtitle">Prova a cercare qualcos\'altro</string>
+    <string name="btn_new_checklist">Nuova checklist</string>
+    <string name="btn_load_sample_data">Carica checklist di esempio</string>
+
+    <!-- Scheda checklist -->
+    <string name="menu_reminders_alerts">Promemoria e avvisi</string>
+    <string name="menu_reset_uncheck_all">Azzera (deseleziona tutto)</string>
+    <string name="menu_duplicate">Duplica</string>
+    <string name="menu_delete">Elimina</string>
+    <string name="checklist_options_desc">Opzioni checklist</string>
+    <string name="progress_no_items">Nessun elemento</string>
+    <string name="progress_format">%1$d di %2$d completati</string>
+    <string name="alarm_set_badge">Sveglia impostata</string>
+    <string name="geofence_active_badge">Avviso di posizione attivo</string>
+    <string name="more_tags_format">altri %1$d</string>
+
+    <!-- Schermata dei dettagli della checklist -->
+    <string name="search_items_hint">Filtra gli elementi…</string>
+    <string name="search_items_desc">Cerca elementi</string>
+    <string name="menu_desc">Menu</string>
+    <string name="action_show_all">Mostra tutto</string>
+    <string name="action_hide_completed">Nascondi completati</string>
+    <string name="menu_uncheck_all">Deseleziona tutto (azzera)</string>
+    <string name="menu_check_all">Seleziona tutto</string>
+    <string name="menu_edit_details">Modifica dettagli</string>
+    <string name="menu_share_checklist">Condividi checklist</string>
+    <string name="menu_delete_checklist">Elimina checklist</string>
+    <string name="share_chooser_title">Condividi checklist</string>
+    <string name="share_checklist_header">📋 %1$s\n</string>
+    <string name="fab_add_item">Aggiungi elemento</string>
+    <string name="tag_filter_all">Tutti</string>
+    <string name="empty_detail_no_items">Questa checklist non contiene ancora elementi</string>
+    <string name="empty_detail_all_completed">Tutti gli elementi rimanenti sono stati completati!</string>
+    <string name="empty_detail_no_matching">Nessun elemento corrispondente</string>
+    <string name="empty_detail_tap_to_add">Tocca il pulsante \'+\' qui sotto per aggiungere il primo elemento</string>
+    <string name="empty_detail_clear_filters">Prova a rimuovere i filtri per tag o ricerca</string>
+
+    <!-- Scheda elemento -->
+    <string name="item_photo_desc">Foto dell\'elemento</string>
+    <string name="more_item_options_desc">Altre opzioni per l\'elemento</string>
+    <string name="menu_view_photo">Visualizza foto</string>
+    <string name="menu_edit_item">Modifica elemento</string>
+    <string name="menu_delete_item">Elimina elemento</string>
+
+    <!-- Finestre: modifica e creazione checklist -->
+    <string name="dialog_title_new_checklist">Nuova checklist</string>
+    <string name="dialog_title_edit_checklist">Modifica checklist</string>
+    <string name="label_checklist_title">Titolo checklist *</string>
+    <string name="placeholder_checklist_title">es. Bagaglio per un viaggio a Roma</string>
+    <string name="error_title_required">Il titolo è obbligatorio</string>
+    <string name="label_checklist_description">Descrizione / Contesto</string>
+    <string name="placeholder_checklist_description">es. Cose da mettere in valigia per 3 giorni di lavoro</string>
+    <string name="label_select_icon">Scegli un\'icona</string>
+
+    <!-- Finestre: conferma eliminazione -->
+    <string name="dialog_title_delete_checklist">Elimina checklist</string>
+    <string name="dialog_msg_delete_checklist">Vuoi davvero eliminare questa checklist? Tutti gli elementi al suo interno verranno rimossi definitivamente.</string>
+    <string name="dialog_msg_delete_named_checklist">Vuoi davvero eliminare \'%1$s\'? Questa azione non può essere annullata.</string>
+
+    <!-- Pannello inferiore: modifica e creazione elemento -->
+    <string name="sheet_title_new_item">Nuovo elemento</string>
+    <string name="sheet_title_edit_item">Modifica elemento</string>
+    <string name="label_item_title">Titolo elemento *</string>
+    <string name="placeholder_item_title">es. Passaporto, olio motore, pulire i fornelli</string>
+    <string name="label_item_description">Descrizione e note (facoltative)</string>
+    <string name="placeholder_item_description">es. Controllare a freddo: il livello deve essere tra min e max</string>
+    <string name="label_item_tag">Tag / Categoria (facoltativo)</string>
+    <string name="placeholder_item_tag">es. Documenti, sicurezza, cucina</string>
+    <string name="label_existing_tags">Tag esistenti:</string>
+    <string name="label_attached_photo">Foto allegata</string>
+    <string name="btn_camera">Fotocamera</string>
+    <string name="btn_gallery">Galleria</string>
+    <string name="btn_retake">Scatta di nuovo</string>
+    <string name="photo_attached">Foto allegata</string>
+    <string name="remove_photo_desc">Rimuovi foto</string>
+    <string name="btn_add_item">Aggiungi elemento</string>
+
+    <!-- Finestra: configurazione promemoria -->
+    <string name="dialog_title_reminders">Promemoria checklist</string>
+    <string name="reminder_time_title">Promemoria con data e ora</string>
+    <string name="reminder_time_desc">Mostra un avviso a una data e ora precise</string>
+    <string name="scheduled_alarm_label">Promemoria programmato</string>
+    <string name="reminder_geofence_title">Prossimità a una posizione</string>
+    <string name="reminder_geofence_desc">Avviso quando arrivi nelle vicinanze</string>
+    <string name="btn_pick_location_map">Scegli posizione sulla mappa</string>
+    <string name="btn_change_location_map">Cambia posizione sulla mappa</string>
+    <string name="label_location_name">Nome della posizione</string>
+    <string name="placeholder_location_name">es. Supermercato, ufficio, garage</string>
+    <string name="label_latitude">Latitudine</string>
+    <string name="placeholder_latitude">es. 45.4642</string>
+    <string name="label_longitude">Longitudine</string>
+    <string name="placeholder_longitude">es. 9.1900</string>
+    <string name="label_trigger_radius">Raggio di attivazione (metri)</string>
+    <string name="placeholder_trigger_radius">200</string>
+
+    <!-- Finestra di selezione posizione sulla mappa -->
+    <string name="map_search_placeholder">Cerca una città o un indirizzo…</string>
+    <string name="map_default_place_name">Centro della zona selezionata</string>
+    <string name="map_confirm_location">Conferma posizione</string>
+    <string name="map_no_locations_found">Nessuna posizione trovata</string>
+    <string name="map_search_failed">Ricerca non riuscita, controlla la connessione</string>
+    <string name="zoom_in_desc">Ingrandisci</string>
+    <string name="zoom_out_desc">Riduci</string>
+    <string name="my_location_desc">La mia posizione</string>
+    <string name="map_coords_format">Lat: %1$.5f, Long: %2$.5f  •  Raggio: %3$dm</string>
+
+    <!-- Finestra delle impostazioni -->
+    <string name="settings_title">Preferenze</string>
+    <string name="section_launch_screen">Schermata iniziale</string>
+    <string name="section_launch_screen_desc">Scegli cosa visualizzare all\'apertura dell\'app</string>
+    <string name="section_appearance">Aspetto e colori</string>
+    <string name="section_sample_checklists">Checklist di esempio</string>
+    <string name="section_sample_checklists_desc">Aggiungi esempi realistici (bagagli, controlli auto, pulizie)</string>
+    <string name="start_page_all_checklists">Tutte le checklist</string>
+    <string name="start_page_all_checklists_desc">Mostra sempre l\'elenco completo all\'avvio</string>
+    <string name="start_page_latest_opened">Ultima aperta</string>
+    <string name="start_page_latest_opened_desc">Apri automaticamente la checklist visualizzata più di recente</string>
+    <string name="theme_system">Predefinito di sistema</string>
+    <string name="theme_light">Carta chiara</string>
+    <string name="theme_dark">Pergamena scura</string>
+
+    <!-- Notifiche e promemoria in background -->
+    <string name="channel_alarm_name">Promemoria programmati delle checklist</string>
+    <string name="channel_alarm_desc">Notifiche per gli avvisi programmati delle checklist</string>
+    <string name="default_alarm_title">Promemoria checklist</string>
+    <string name="default_alarm_desc">Hai delle attività da spuntare!</string>
+    <string name="notification_title_format">Checklist: %1$s</string>
+    <string name="notification_default_text">Non dimenticare di rivedere gli elementi della checklist</string>
+    <string name="channel_geofence_name">Avvisi di prossimità delle checklist</string>
+    <string name="channel_geofence_desc">Avvisi quando arrivi vicino alla posizione di una checklist</string>
+    <string name="geofence_notif_title">📍 Checklist nelle vicinanze</string>
+    <string name="geofence_notif_text">Sei vicino alla posizione impostata per questa checklist. Tocca per aprirla e rivedere gli elementi!</string>
+</resources>
