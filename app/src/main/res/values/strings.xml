@@ -1,0 +1,160 @@
+<resources>
+    <string name="app_name">Tickfolio</string>
+
+    <!-- General Actions -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_create">Create</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_close">Close</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_done">Done</string>
+    <string name="action_back">Back</string>
+    <string name="action_search">Search</string>
+    <string name="action_more_options">More options</string>
+
+    <!-- Overview Screen -->
+    <string name="overview_title">Checklists</string>
+    <string name="search_hint_overview">Search title, items, tags…</string>
+    <string name="clear_search_desc">Clear search</string>
+    <string name="close_search_desc">Close Search</string>
+    <string name="search_desc">Search</string>
+    <string name="settings_desc">Settings</string>
+    <string name="create_checklist_fab">Create Checklist</string>
+    <string name="empty_checklists_title">No checklists yet</string>
+    <string name="empty_checklists_found_title">No checklists found</string>
+    <string name="empty_checklists_subtitle">Create a context for what you want to do or remember</string>
+    <string name="empty_checklists_found_subtitle">Try searching for something else</string>
+    <string name="btn_new_checklist">New Checklist</string>
+    <string name="btn_load_sample_data">Load Sample Checklists</string>
+
+    <!-- Checklist Card -->
+    <string name="menu_reminders_alerts">Reminders &amp; Alerts</string>
+    <string name="menu_reset_uncheck_all">Reset (Uncheck All)</string>
+    <string name="menu_duplicate">Duplicate</string>
+    <string name="menu_delete">Delete</string>
+    <string name="checklist_options_desc">Checklist options</string>
+    <string name="progress_no_items">No items yet</string>
+    <string name="progress_format">%1$d of %2$d completed</string>
+    <string name="alarm_set_badge">Alarm set</string>
+    <string name="geofence_active_badge">Geofence active</string>
+    <string name="more_tags_format">+%1$d more</string>
+
+    <!-- Checklist Detail Screen -->
+    <string name="search_items_hint">Filter items…</string>
+    <string name="search_items_desc">Search items</string>
+    <string name="menu_desc">Menu</string>
+    <string name="action_show_all">Show all</string>
+    <string name="action_hide_completed">Hide completed</string>
+    <string name="menu_uncheck_all">Uncheck All (Reset)</string>
+    <string name="menu_check_all">Check All</string>
+    <string name="menu_edit_details">Edit Details</string>
+    <string name="menu_share_checklist">Share Checklist</string>
+    <string name="menu_delete_checklist">Delete Checklist</string>
+    <string name="share_chooser_title">Share Checklist</string>
+    <string name="share_checklist_header">📋 %1$s\n</string>
+    <string name="fab_add_item">Add Item</string>
+    <string name="tag_filter_all">All</string>
+    <string name="empty_detail_no_items">No items in this checklist yet</string>
+    <string name="empty_detail_all_completed">All remaining items completed!</string>
+    <string name="empty_detail_no_matching">No matching items</string>
+    <string name="empty_detail_tap_to_add">Tap the \'+\' button below to add your first item</string>
+    <string name="empty_detail_clear_filters">Try clearing your tag or search filter</string>
+
+    <!-- Checklist Item Card -->
+    <string name="item_photo_desc">Item photo</string>
+    <string name="more_item_options_desc">More item options</string>
+    <string name="menu_view_photo">View Photo</string>
+    <string name="menu_edit_item">Edit Item</string>
+    <string name="menu_delete_item">Delete Item</string>
+
+    <!-- Dialogs: Edit / Create Checklist -->
+    <string name="dialog_title_new_checklist">New Checklist</string>
+    <string name="dialog_title_edit_checklist">Edit Checklist</string>
+    <string name="label_checklist_title">Checklist Title *</string>
+    <string name="placeholder_checklist_title">e.g. Packing for Rome Trip</string>
+    <string name="error_title_required">Title is required</string>
+    <string name="label_checklist_description">Description / Context</string>
+    <string name="placeholder_checklist_description">e.g. Things to pack for a 3-day work trip</string>
+    <string name="label_select_icon">Select Icon</string>
+
+    <!-- Dialogs: Delete Confirmation -->
+    <string name="dialog_title_delete_checklist">Delete Checklist</string>
+    <string name="dialog_msg_delete_checklist">Are you sure you want to delete this checklist? All items within it will be permanently removed.</string>
+    <string name="dialog_msg_delete_named_checklist">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+
+    <!-- BottomSheet: Edit / Create Item -->
+    <string name="sheet_title_new_item">New Item</string>
+    <string name="sheet_title_edit_item">Edit Item</string>
+    <string name="label_item_title">Item Title *</string>
+    <string name="placeholder_item_title">e.g. Passport, Engine Oil, Clean Stove</string>
+    <string name="label_item_description">Description &amp; Notes (optional)</string>
+    <string name="placeholder_item_description">e.g. Check cold, level should be between min/max</string>
+    <string name="label_item_tag">Tag / Category (optional)</string>
+    <string name="placeholder_item_tag">e.g. Documents, Safety, Kitchen</string>
+    <string name="label_existing_tags">Existing tags:</string>
+    <string name="label_attached_photo">Attached Photo</string>
+    <string name="btn_camera">Camera</string>
+    <string name="btn_gallery">Gallery</string>
+    <string name="btn_retake">Retake</string>
+    <string name="photo_attached">Photo attached</string>
+    <string name="remove_photo_desc">Remove photo</string>
+    <string name="btn_add_item">Add Item</string>
+
+    <!-- Dialog: Reminder Configuration -->
+    <string name="dialog_title_reminders">Checklist Reminders</string>
+    <string name="reminder_time_title">Date &amp; Time Alarm</string>
+    <string name="reminder_time_desc">Trigger an alert at an exact date/time</string>
+    <string name="scheduled_alarm_label">Scheduled Alarm</string>
+    <string name="reminder_geofence_title">Location Proximity</string>
+    <string name="reminder_geofence_desc">Geofence alert when arriving nearby</string>
+    <string name="btn_pick_location_map">Pick Location on Map</string>
+    <string name="btn_change_location_map">Change Location on Map</string>
+    <string name="label_location_name">Location Name</string>
+    <string name="placeholder_location_name">e.g. Supermarket, Office, Garage</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="placeholder_latitude">e.g. 45.4642</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="placeholder_longitude">e.g. 9.1900</string>
+    <string name="label_trigger_radius">Trigger Radius (meters)</string>
+    <string name="placeholder_trigger_radius">200</string>
+
+    <!-- Location Picker Map Dialog -->
+    <string name="map_search_placeholder">Search city or address…</string>
+    <string name="map_default_place_name">Selected Geofence Center</string>
+    <string name="map_confirm_location">Confirm Location</string>
+    <string name="map_no_locations_found">No locations found</string>
+    <string name="map_search_failed">Search failed, check connection</string>
+    <string name="zoom_in_desc">Zoom In</string>
+    <string name="zoom_out_desc">Zoom Out</string>
+    <string name="my_location_desc">My Location</string>
+    <string name="map_coords_format">Lat: %1$.5f, Lng: %2$.5f  •  Radius: %3$dm</string>
+
+    <!-- Settings Dialog -->
+    <string name="settings_title">Preferences</string>
+    <string name="section_launch_screen">Launch Screen</string>
+    <string name="section_launch_screen_desc">Choose what appears when you open the app</string>
+    <string name="section_appearance">Appearance &amp; Palette</string>
+    <string name="section_sample_checklists">Sample Checklists</string>
+    <string name="section_sample_checklists_desc">Add realistic presets (packing, car inspection, cleaning)</string>
+    <string name="start_page_all_checklists">All Checklists</string>
+    <string name="start_page_all_checklists_desc">Always show the full list of checklists on launch</string>
+    <string name="start_page_latest_opened">Latest Opened</string>
+    <string name="start_page_latest_opened_desc">Automatically open the most recently viewed checklist</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Paper Light</string>
+    <string name="theme_dark">Parchment Dark</string>
+
+    <!-- Notifications & Background Reminders -->
+    <string name="channel_alarm_name">Checklist Scheduled Reminders</string>
+    <string name="channel_alarm_desc">Notifications for checklist scheduled alerts</string>
+    <string name="default_alarm_title">Checklist Reminder</string>
+    <string name="default_alarm_desc">You have tasks waiting to be checked!</string>
+    <string name="notification_title_format">Checklist: %1$s</string>
+    <string name="notification_default_text">Don\'t forget to review your checklist items</string>
+    <string name="channel_geofence_name">Checklist Location Proximity Alerts</string>
+    <string name="channel_geofence_desc">Proximity alerts when arriving near a checklist location</string>
+    <string name="geofence_notif_title">📍 Nearby Checklist Location</string>
+    <string name="geofence_notif_text">You are near the location set for this checklist. Tap to open and review items!</string>
+</resources>

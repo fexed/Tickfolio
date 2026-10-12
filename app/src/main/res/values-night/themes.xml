@@ -1,0 +1,6 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme for Jetpack Compose -->
+    <style name="Theme.Checklist" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Status bar and navigation bar will be handled in Compose -->
+    </style>
+</resources>
