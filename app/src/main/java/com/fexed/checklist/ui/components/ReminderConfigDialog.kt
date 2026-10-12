@@ -46,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fexed.checklist.R
@@ -90,15 +91,13 @@ fun ReminderConfigDialog(
     val dateFormat = remember { SimpleDateFormat("EEE, dd MMM yyyy - HH:mm", Locale.getDefault()) }
 
     if (!showMapPicker) {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-        title = {
+        val dialogTitle: @Composable () -> Unit = {
             Text(
                 text = stringResource(R.string.dialog_title_reminders),
                 style = MaterialTheme.typography.titleLarge
             )
-        },
-        text = {
+        }
+        val dialogContent: @Composable () -> Unit = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -341,8 +340,8 @@ fun ReminderConfigDialog(
                     )
                 }
             }
-        },
-        confirmButton = {
+        }
+        val confirmButton: @Composable () -> Unit = {
             Button(
                 onClick = {
                     val finalReminderTime = if (enableTimeReminder) selectedTimestamp else null
@@ -362,15 +361,31 @@ fun ReminderConfigDialog(
             ) {
                 Text(stringResource(R.string.action_save))
             }
-        },
-        dismissButton = {
+        }
+        val dismissButton: @Composable () -> Unit = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        },
-        shape = RoundedCornerShape(16.dp),
-        containerColor = MaterialTheme.colorScheme.surface
-    )
+        }
+
+        if (LocalInspectionMode.current) {
+            DialogPreviewSurface(
+                title = dialogTitle,
+                content = dialogContent,
+                confirmButton = confirmButton,
+                dismissButton = dismissButton
+            )
+        } else {
+            AlertDialog(
+                onDismissRequest = onDismiss,
+                title = dialogTitle,
+                text = dialogContent,
+                confirmButton = confirmButton,
+                dismissButton = dismissButton,
+                shape = RoundedCornerShape(16.dp),
+                containerColor = MaterialTheme.colorScheme.surface
+            )
+        }
     }
 
     // Interactive Map Picker Dialog
