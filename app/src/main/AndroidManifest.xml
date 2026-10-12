@@ -35,6 +35,40 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".widget.SingleChecklistWidgetConfigActivity"
+            android:exported="true"
+            android:label="@string/widget_picker_title"
+            android:theme="@style/Theme.Checklist">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".widget.SingleChecklistWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_single_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/single_checklist_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.AllChecklistsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_all_title">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/all_checklists_widget_info" />
+        </receiver>
+
         <!-- Broadcast Receivers for Time & Geofence Reminders -->
         <receiver
             android:name=".data.reminder.ChecklistAlarmReceiver"

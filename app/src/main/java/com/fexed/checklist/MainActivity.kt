@@ -16,13 +16,15 @@ import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.navigation.ChecklistNavGraph
 import com.fexed.checklist.ui.theme.ChecklistTheme
 
+const val EXTRA_OPEN_CHECKLIST_ID = "open_checklist_id"
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         val app = application as ChecklistApplication
-        val openChecklistId = intent?.getLongExtra("open_checklist_id", -1L)?.takeIf { it != -1L }
+        val openChecklistId = intent?.getLongExtra(EXTRA_OPEN_CHECKLIST_ID, -1L)?.takeIf { it != -1L }
 
         setContent {
             val userPrefs by app.repository.userPreferences.collectAsState(initial = null)

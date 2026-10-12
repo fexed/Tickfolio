@@ -15,6 +15,8 @@ carry the details that make it useful.
 - Set date-and-time reminders or location-proximity reminders.
 - Choose a geofence location on an interactive map, search for a place, or use
   the device's current location.
+- Add a home-screen widget for one checklist with tappable completion controls,
+  or a separate scrollable widget for opening any saved checklist.
 - Choose whether the app opens to all checklists or the latest checklist, and
   select system, light paper, or dark parchment appearance.
 - Start with sample checklists, which are added automatically on first launch
@@ -45,6 +47,8 @@ flowchart TD
     Reminders --> Android[Android alarms, location, and notifications]
     Screens --> Images[ImageStorageHelper]
     Images --> Files[(App-private image files)]
+    Room --> Widgets[Home-screen widgets]
+    Widgets --> Activity[MainActivity]
 ```
 
 - **Application setup:** `ChecklistApplication` creates the Room database,
@@ -63,6 +67,14 @@ flowchart TD
   notifications. Item images are copied to app-private storage.
 - **Map picker:** The location picker draws OpenStreetMap tiles and supports
   map gestures, place search, and selecting a location.
+- **Home-screen widgets:** Glance renders a configurable single-checklist
+  widget with direct item completion and an all-checklists widget. Room
+  invalidations refresh both widgets when checklist data changes.
+
+Add either widget from the launcher's widget picker. The single-checklist
+widget prompts you to choose which saved checklist to show; tap a checklist
+item to toggle its completion, or tap the header to open it in the app. The
+all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
 The Room database currently uses destructive fallback migration. During this
 MVP stage, a database schema upgrade without a migration can erase existing
@@ -96,6 +108,7 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   │   │   ├── preferences/    # DataStore settings
 │       │   │   │   ├── reminder/       # Alarm and geofence notifications
 │       │   │   │   └── repository/     # Data access boundary
+│       │   │   ├── widget/             # Glance widgets and checklist picker
 │       │   │   ├── ui/
 │       │   │   │   ├── components/     # Reusable Compose UI and previews
 │       │   │   │   ├── navigation/
@@ -105,7 +118,8 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   └── res/
 │       │       ├── drawable/           # Adaptive launcher icon artwork
 │       │       ├── mipmap-*/           # Launcher icons at device densities
-│       │       └── values/             # Strings, colors, and themes
+│       │       ├── values/             # Strings, colors, and themes
+│       │       └── xml/                # Widget and backup metadata
 │       └── test/                       # Local JVM unit tests
 ├── gradle/
 │   ├── libs.versions.toml              # Central dependency versions
