@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.R
@@ -56,15 +57,13 @@ fun EditChecklistDialog(
     var selectedIcon by remember { mutableStateOf(initialChecklist?.iconName ?: "list") }
     var titleError by remember { mutableStateOf(false) }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    val dialogTitle: @Composable () -> Unit = {
             Text(
                 text = if (initialChecklist == null) stringResource(R.string.dialog_title_new_checklist) else stringResource(R.string.dialog_title_edit_checklist),
                 style = MaterialTheme.typography.titleLarge
             )
-        },
-        text = {
+    }
+    val dialogContent: @Composable () -> Unit = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -151,8 +150,8 @@ fun EditChecklistDialog(
                     }
                 }
             }
-        },
-        confirmButton = {
+    }
+    val confirmButton: @Composable () -> Unit = {
             Button(
                 onClick = {
                     if (title.isBlank()) {
@@ -169,15 +168,31 @@ fun EditChecklistDialog(
             ) {
                 Text(if (initialChecklist == null) stringResource(R.string.action_create) else stringResource(R.string.action_save))
             }
-        },
-        dismissButton = {
+    }
+    val dismissButton: @Composable () -> Unit = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        },
-        shape = RoundedCornerShape(16.dp),
-        containerColor = MaterialTheme.colorScheme.surface
-    )
+    }
+
+    if (LocalInspectionMode.current) {
+        DialogPreviewSurface(
+            title = dialogTitle,
+            content = dialogContent,
+            confirmButton = confirmButton,
+            dismissButton = dismissButton
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = dialogTitle,
+            text = dialogContent,
+            confirmButton = confirmButton,
+            dismissButton = dismissButton,
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
 }
 
 @Preview(name = "Edit Checklist Dialog Preview", showBackground = true)

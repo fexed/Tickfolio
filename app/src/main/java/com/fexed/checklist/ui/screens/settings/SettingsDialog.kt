@@ -30,6 +30,7 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,6 +40,7 @@ import com.fexed.checklist.R
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
+import com.fexed.checklist.ui.components.DialogPreviewSurface
 import com.fexed.checklist.ui.theme.ChecklistTheme
 
 @Composable
@@ -49,15 +51,13 @@ fun SettingsDialog(
     onLoadSampleData: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
+    val dialogTitle: @Composable () -> Unit = {
             Text(
                 text = stringResource(R.string.settings_title),
                 style = MaterialTheme.typography.titleLarge
             )
-        },
-        text = {
+    }
+    val dialogContent: @Composable () -> Unit = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -188,8 +188,8 @@ fun SettingsDialog(
                     Text(stringResource(R.string.btn_load_sample_data))
                 }
             }
-        },
-        confirmButton = {
+    }
+    val confirmButton: @Composable () -> Unit = {
             Button(
                 onClick = onDismiss,
                 shape = RoundedCornerShape(10.dp),
@@ -200,10 +200,24 @@ fun SettingsDialog(
             ) {
                 Text(stringResource(R.string.action_done))
             }
-        },
-        shape = RoundedCornerShape(16.dp),
-        containerColor = MaterialTheme.colorScheme.surface
-    )
+    }
+
+    if (LocalInspectionMode.current) {
+        DialogPreviewSurface(
+            title = dialogTitle,
+            content = dialogContent,
+            confirmButton = confirmButton
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = dialogTitle,
+            text = dialogContent,
+            confirmButton = confirmButton,
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
 }
 
 @Preview(name = "Settings Dialog Preview", showBackground = true)

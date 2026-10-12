@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,10 +42,7 @@ fun ImageViewerDialog(
     title: String,
     onDismiss: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
+    val viewerContent: @Composable () -> Unit = {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -111,7 +109,19 @@ fun ImageViewerDialog(
                         )
                     }
                 }
+
             }
+        }
+    }
+
+    if (LocalInspectionMode.current) {
+        viewerContent()
+    } else {
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            viewerContent()
         }
     }
 }
