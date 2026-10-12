@@ -68,10 +68,20 @@ The Room database currently uses destructive fallback migration. During this
 MVP stage, a database schema upgrade without a migration can erase existing
 local checklist data.
 
+## Nightly releases
+
+The `.github/workflows/nightly-release.yml` workflow runs on `master` daily at
+6:00 AM Europe/Rome time and can also be started manually from the GitHub
+Actions tab. It builds a release APK and publishes it as a GitHub prerelease
+when there are changes since the previous nightly. The APK is unsigned.
+
 ## Project structure
 
 ```text
 .
+├── .github/
+│   └── workflows/
+│       └── nightly-release.yml         # Scheduled Android nightly release
 ├── app/
 │   ├── build.gradle.kts                # Android app configuration and dependencies
 │   └── src/

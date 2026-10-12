@@ -1,0 +1,130 @@
+name: Nightly release
+
+on:
+  schedule:
+    # GitHub schedules use UTC; these two times keep the run at 6:00 AM in Europe/Rome.
+    - cron: "0 4 * * *"
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build and publish nightly APK
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check schedule and release date
+        id: release_info
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SCHEDULE_CRON: ${{ github.event.schedule }}
+        run: |
+          if [[ "$EVENT_NAME" == "schedule" ]]; then
+            local_offset="$(TZ=Europe/Rome date +%z)"
+            case "${SCHEDULE_CRON}:${local_offset}" in
+              "0 4 * * *:+0200"|"0 5 * * *:+0100") ;;
+              *)
+                echo "This schedule does not correspond to 6:00 AM in Europe/Rome; skipping."
+                echo "run=false" >> "$GITHUB_OUTPUT"
+                exit 0
+                ;;
+            esac
+          fi
+
+          release_date="$(TZ=Europe/Rome date +%Y-%m-%d)"
+          release_tag="nightly-$(TZ=Europe/Rome date +%Y%m%d)"
+          echo "date=$release_date" >> "$GITHUB_OUTPUT"
+          echo "tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "run=true" >> "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        if: steps.release_info.outputs.run == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Skip if today's nightly release already exists
+        id: daily_release
+        if: steps.release_info.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release_info.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Today's nightly release already exists: $RELEASE_TAG"
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check for changes since the previous nightly
+        id: changes
+        if: steps.release_info.outputs.run == 'true' && steps.daily_release.outputs.run == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          previous_tag="$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '[.[] | select(.tag_name | startswith("nightly-"))] | sort_by(.published_at) | last | .tag_name // ""')"
+
+          if [[ -z "$previous_tag" ]]; then
+            echo "No previous nightly release; building the initial nightly."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch --force origin "refs/tags/${previous_tag}:refs/tags/${previous_tag}"
+          if git diff --quiet "${previous_tag}^{commit}" "$GITHUB_SHA" --; then
+            echo "No source changes since $previous_tag; skipping the build."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            result=$?
+            if [[ "$result" -ne 1 ]]; then
+              exit "$result"
+            fi
+            echo "Changes found since $previous_tag."
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Java
+        if: steps.changes.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: Set up Android SDK
+        if: steps.changes.outputs.changed == 'true'
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ""
+
+      - name: Install Android SDK platform
+        if: steps.changes.outputs.changed == 'true'
+        run: sdkmanager "platforms;android-37" "build-tools;36.0.0"
+
+      - name: Build release APK
+        if: steps.changes.outputs.changed == 'true'
+        run: sed 's/\r$//' gradlew | bash -s -- --no-daemon :app:assembleRelease
+
+      - name: Publish nightly GitHub release
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_DATE: ${{ steps.release_info.outputs.date }}
+          RELEASE_TAG: ${{ steps.release_info.outputs.tag }}
+        run: |
+          apk_path="app/build/outputs/apk/release/app-release-unsigned.apk"
+          test -f "$apk_path"
+          gh release create "$RELEASE_TAG" \
+            --target "$GITHUB_SHA" \
+            --title "Nightly build ${RELEASE_DATE}" \
+            --notes "Automated release APK built from commit ${GITHUB_SHA}. This APK is unsigned." \
+            --prerelease \
+            "${apk_path}#Tickfolio-${RELEASE_DATE}-unsigned.apk"
