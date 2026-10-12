@@ -19,6 +19,8 @@ carry the details that make it useful.
   or a separate scrollable widget for opening any saved checklist.
 - Choose whether the app opens to all checklists or the latest checklist, and
   select system, light paper, or dark parchment appearance.
+- On Android 13 and later, change the app language in system settings under
+  **Settings > Apps > Tickfolio > Language** (English or Italian).
 - Start with sample checklists, which are added automatically on first launch
   when the local database is empty.
 
