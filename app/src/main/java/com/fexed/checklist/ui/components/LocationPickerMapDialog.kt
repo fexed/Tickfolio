@@ -77,14 +77,18 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.fexed.checklist.R
+import com.fexed.checklist.data.preferences.ThemeMode
+import com.fexed.checklist.ui.theme.ChecklistTheme
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -151,6 +155,7 @@ fun LocationPickerMapDialog(
     onLocationSelected: (lat: Double, lng: Double, suggestedName: String?) -> Unit
 ) {
     val context = LocalContext.current
+    val isPreview = LocalInspectionMode.current
     val coroutineScope = rememberCoroutineScope()
 
     // Default to initial location or Rome / default European coordinates
@@ -168,6 +173,7 @@ fun LocationPickerMapDialog(
 
     // Attempt to center on user's current GPS location if no initial coords were passed
     LaunchedEffect(Unit) {
+        if (isPreview) return@LaunchedEffect
         if (initialLat == null || initialLng == null) {
             try {
                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -187,6 +193,7 @@ fun LocationPickerMapDialog(
 
     // Debounced reverse geocode to suggest a friendly name whenever centerLat or centerLng settles
     LaunchedEffect(centerLat, centerLng) {
+        if (isPreview) return@LaunchedEffect
         delay(400)
         withContext(Dispatchers.IO) {
             try {
@@ -468,6 +475,7 @@ fun LocationPickerMapDialog(
 
                 // Fetch missing tiles
                 LaunchedEffect(tileZoom, minTileX, maxTileX, minTileY, maxTileY) {
+                    if (isPreview) return@LaunchedEffect
                     for (x in minTileX..maxTileX) {
                         for (y in minTileY..maxTileY) {
                             if (y in 0..maxTileIndex) {
@@ -735,3 +743,17 @@ fun LocationPickerMapDialog(
             }
         }
     }
+
+    @Preview(name = "Location picker map", showBackground = true)
+@Composable
+private fun LocationPickerMapDialogPreview() {
+    ChecklistTheme(themeMode = ThemeMode.LIGHT) {
+        LocationPickerMapDialog(
+            initialLat = 47.3769,
+            initialLng = 8.5417,
+            initialRadius = 200f,
+            onDismiss = {},
+            onLocationSelected = { _, _, _ -> }
+        )
+    }
+}

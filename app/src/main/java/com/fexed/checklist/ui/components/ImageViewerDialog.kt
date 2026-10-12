@@ -25,11 +25,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.SubcomposeAsyncImage
 import com.fexed.checklist.R
+import com.fexed.checklist.data.preferences.ThemeMode
+import com.fexed.checklist.ui.theme.ChecklistTheme
 import java.io.File
 
 @Composable
@@ -110,5 +113,17 @@ fun ImageViewerDialog(
                 }
             }
         }
+    }
+}
+
+@Preview(name = "Image viewer dialog", showBackground = true)
+@Composable
+private fun ImageViewerDialogPreview() {
+    ChecklistTheme(themeMode = ThemeMode.LIGHT) {
+        ImageViewerDialog(
+            imagePath = "",
+            title = "Passport and travel documents",
+            onDismiss = {}
+        )
     }
 }

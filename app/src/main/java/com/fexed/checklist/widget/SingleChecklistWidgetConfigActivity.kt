@@ -174,3 +174,49 @@ private fun ChecklistWidgetPicker(
         }
     }
 }
+
+@Preview(name = "Checklist widget picker", showBackground = true)
+@Composable
+private fun ChecklistWidgetPickerPreview() {
+    ChecklistTheme(themeMode = ThemeMode.LIGHT) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ChecklistWidgetPicker(
+                checklists = listOf(
+                    ChecklistWithItems(
+                        checklist = Checklist(
+                            id = 1,
+                            title = "Work trip",
+                            description = "Packing and preparation",
+                            iconName = "trip"
+                        ),
+                        items = emptyList()
+                    ),
+                    ChecklistWithItems(
+                        checklist = Checklist(
+                            id = 2,
+                            title = "Weekly car maintenance",
+                            description = "Quick checks before the commute"
+                        ),
+                        items = emptyList()
+                    )
+                ),
+                onSelect = {},
+                onOpenApp = {}
+            )
+        }
+    }
+}
+
+@Preview(name = "Checklist widget picker - empty", showBackground = true)
+@Composable
+private fun ChecklistWidgetPickerEmptyPreview() {
+    ChecklistTheme(themeMode = ThemeMode.LIGHT) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            ChecklistWidgetPicker(
+                checklists = emptyList(),
+                onSelect = {},
+                onOpenApp = {}
+            )
+        }
+    }
+}
