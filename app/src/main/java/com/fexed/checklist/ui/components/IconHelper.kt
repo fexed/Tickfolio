@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -48,6 +49,9 @@ object IconHelper {
         ChecklistIcon("business", "Business & Meeting", "Work", Icons.Default.BusinessCenter),
         ChecklistIcon("study", "Study & School", "Work", Icons.Default.School),
         ChecklistIcon("book", "Reading & Library", "Work", Icons.AutoMirrored.Filled.MenuBook),
+
+        // Finance
+        ChecklistIcon("money", "Shopping & Spending", "Finance", Icons.Default.ShoppingCart),
 
         // Outdoors & Sports
         ChecklistIcon("forest", "Camping & Forest", "Outdoors", Icons.Default.Forest),
