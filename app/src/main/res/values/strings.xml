@@ -1,5 +1,16 @@
 <resources>
     <string name="app_name">Tickfolio</string>
+    <string name="widget_single_title">Tickfolio checklist</string>
+    <string name="widget_single_description">Show one checklist and check off items from your home screen.</string>
+    <string name="widget_all_title">Tickfolio checklists</string>
+    <string name="widget_all_description">Browse and open your saved checklists from your home screen.</string>
+    <string name="widget_loading_checklist">Loading checklist…</string>
+    <string name="widget_choose_checklist_hint">Tap to choose a checklist.</string>
+    <string name="widget_no_checklists">No checklists yet. Tap to open Tickfolio.</string>
+    <string name="widget_no_items">No items in this checklist.</string>
+    <string name="widget_completed_format">%1$d of %2$d completed</string>
+    <string name="widget_picker_title">Choose a checklist for your widget</string>
+    <string name="widget_picker_empty">Create a checklist in Tickfolio first, then add this widget.</string>
 
     <!-- General Actions -->
     <string name="action_cancel">Cancel</string>

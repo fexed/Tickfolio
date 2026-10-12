@@ -71,6 +71,9 @@ dependencies {
     // DataStore Preferences
     implementation(libs.datastore.preferences)
 
+    // Home screen widgets
+    implementation(libs.glance.appwidget)
+
     // Play Services Location (Geofencing)
     implementation(libs.play.services.location)
 

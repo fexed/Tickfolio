@@ -23,6 +23,14 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklists WHERE id = :id")
     fun getChecklistWithItems(id: Long): Flow<ChecklistWithItems?>
 
+    @Transaction
+    @Query("SELECT * FROM checklists ORDER BY lastOpenedAt DESC")
+    suspend fun getAllChecklistsForWidget(): List<ChecklistWithItems>
+
+    @Transaction
+    @Query("SELECT * FROM checklists WHERE id = :id")
+    suspend fun getChecklistForWidget(id: Long): ChecklistWithItems?
+
     @Query("SELECT * FROM checklists WHERE id = :id")
     suspend fun getChecklistById(id: Long): Checklist?
 
