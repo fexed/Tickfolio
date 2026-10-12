@@ -42,6 +42,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,10 +56,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.preferences.ThemeMode
+import com.fexed.checklist.ui.theme.ChecklistTheme
 import com.fexed.checklist.util.ImageStorageHelper
 import java.io.File
 
@@ -361,5 +365,22 @@ fun EditItemBottomSheet(
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Preview(name = "New checklist item", showBackground = true)
+@Composable
+private fun EditItemBottomSheetPreview() {
+    ChecklistTheme(themeMode = ThemeMode.LIGHT) {
+        EditItemBottomSheet(
+            sheetState = rememberModalBottomSheetState(
+                skipPartiallyExpanded = true,
+                confirmValueChange = { true }
+            ),
+            availableTags = listOf("Essentials", "Documents", "Clothing"),
+            onDismiss = {},
+            onConfirm = { _, _, _, _ -> }
+        )
     }
 }
