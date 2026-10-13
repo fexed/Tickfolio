@@ -1,0 +1,119 @@
+package com.fexed.checklist.data.sync
+
+import com.fexed.checklist.data.model.SyncTombstone
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class DriveBackupMergerTest {
+
+    @Test
+    fun mergeKeepsNewestChecklistAndItemRecords() {
+        val local = DriveBackup(
+            exportedAt = 10,
+            checklists = listOf(checklist("list", updatedAt = 3, title = "Local title")),
+            items = listOf(item("item", updatedAt = 7, title = "Local item"))
+        )
+        val remote = DriveBackup(
+            exportedAt = 20,
+            checklists = listOf(checklist("list", updatedAt = 5, title = "Remote title")),
+            items = listOf(item("item", updatedAt = 6, title = "Remote item"))
+        )
+
+        val merged = DriveBackupMerger.merge(local, remote)
+
+        assertEquals(20, merged.exportedAt)
+        assertEquals("Remote title", merged.checklists.single().title)
+        assertEquals("Local item", merged.items.single().title)
+    }
+
+    @Test
+    fun deletionTombstonePreventsOlderRecordFromReturning() {
+        val local = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 2)),
+            tombstones = listOf(SyncTombstone(SyncTombstone.CHECKLIST, "list", 4))
+        )
+        val remote = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 3))
+        )
+
+        val merged = DriveBackupMerger.merge(local, remote)
+
+        assertTrue(merged.checklists.isEmpty())
+        assertTrue(merged.items.isEmpty())
+        assertEquals(4, merged.tombstones.single().deletedAt)
+    }
+
+    @Test
+    fun newerRecordWinsOverOldTombstone() {
+        val local = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 8)),
+            tombstones = listOf(SyncTombstone(SyncTombstone.CHECKLIST, "list", 4))
+        )
+
+        val merged = DriveBackupMerger.merge(local, DriveBackup())
+
+        assertEquals("list", merged.checklists.single().syncId)
+        assertTrue(merged.tombstones.isEmpty())
+    }
+
+    @Test
+    fun itemsAreDroppedWhenTheirChecklistIsDeleted() {
+        val local = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 2)),
+            items = listOf(item("item", checklistSyncId = "list", updatedAt = 5))
+        )
+        val remote = DriveBackup(
+            tombstones = listOf(SyncTombstone(SyncTombstone.CHECKLIST, "list", 3))
+        )
+
+        val merged = DriveBackupMerger.merge(local, remote)
+
+        assertTrue(merged.checklists.isEmpty())
+        assertTrue(merged.items.isEmpty())
+    }
+
+    private fun checklist(
+        syncId: String,
+        updatedAt: Long,
+        title: String = "Checklist"
+    ) = ChecklistRecord(
+        syncId = syncId,
+        updatedAt = updatedAt,
+        title = title,
+        description = "",
+        iconName = "list",
+        colorTag = 0,
+        createdAt = 1,
+        reminderTime = null,
+        geofenceLat = null,
+        geofenceLng = null,
+        geofenceRadius = 200f,
+        geofenceName = null,
+        recurrenceFrequency = null,
+        recurrenceTimeMinutes = null,
+        recurrenceDayOfWeek = null,
+        recurrenceDayOfMonth = null,
+        recurrenceNextAt = null
+    )
+
+    private fun item(
+        syncId: String,
+        checklistSyncId: String = "list",
+        updatedAt: Long,
+        title: String = "Item"
+    ) = ItemRecord(
+        syncId = syncId,
+        checklistSyncId = checklistSyncId,
+        updatedAt = updatedAt,
+        title = title,
+        description = "",
+        tag = "",
+        imageFileName = null,
+        isCompleted = false,
+        requiredChecks = 1,
+        completedChecks = 0,
+        position = 0,
+        createdAt = 1
+    )
+}

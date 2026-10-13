@@ -5,6 +5,7 @@ import androidx.room.ColumnInfo
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.UUID
 
 @Entity(
     tableName = "checklist_items",
@@ -34,5 +35,9 @@ data class ChecklistItem(
     @ColumnInfo(defaultValue = "0")
     val completedChecks: Int = if (isCompleted) requiredChecks else 0,
     val position: Int = 0,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(defaultValue = "''")
+    val syncId: String = UUID.randomUUID().toString(),
+    @ColumnInfo(defaultValue = "0")
+    val updatedAt: Long = System.currentTimeMillis()
 )

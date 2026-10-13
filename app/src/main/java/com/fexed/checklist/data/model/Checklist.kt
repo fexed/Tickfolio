@@ -1,9 +1,15 @@
 package com.fexed.checklist.data.model
 
 import androidx.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.Index
 import androidx.room.PrimaryKey
+import java.util.UUID
 
-@Entity(tableName = "checklists")
+@Entity(
+    tableName = "checklists",
+    indices = [Index(value = ["syncId"], unique = true)]
+)
 data class Checklist(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -24,5 +30,9 @@ data class Checklist(
     val recurrenceTimeMinutes: Int? = null,
     val recurrenceDayOfWeek: Int? = null,
     val recurrenceDayOfMonth: Int? = null,
-    val recurrenceNextAt: Long? = null
+    val recurrenceNextAt: Long? = null,
+    @ColumnInfo(defaultValue = "''")
+    val syncId: String = UUID.randomUUID().toString(),
+    @ColumnInfo(defaultValue = "0")
+    val updatedAt: Long = System.currentTimeMillis()
 )

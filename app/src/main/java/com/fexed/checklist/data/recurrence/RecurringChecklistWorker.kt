@@ -42,7 +42,8 @@ class RecurringChecklistWorker(
                 dao.resetRecurringChecklist(
                     checklistId = checklist.id,
                     expectedNextAt = previousOccurrence,
-                    nextAt = nextOccurrence
+                    nextAt = nextOccurrence,
+                    updatedAt = now
                 )
             }
             Result.success()

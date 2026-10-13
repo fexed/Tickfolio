@@ -8,10 +8,11 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.SyncTombstone
 
 @Database(
-    entities = [Checklist::class, ChecklistItem::class],
-    version = 3,
+    entities = [Checklist::class, ChecklistItem::class, SyncTombstone::class],
+    version = 4,
     exportSchema = false
 )
 abstract class ChecklistDatabase : RoomDatabase() {
@@ -37,6 +38,29 @@ abstract class ChecklistDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE checklists ADD COLUMN syncId TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE checklists SET syncId = lower(hex(randomblob(16))), updatedAt = MAX(createdAt, lastOpenedAt)")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_checklists_syncId ON checklists(syncId)")
+
+                db.execSQL("ALTER TABLE checklist_items ADD COLUMN syncId TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE checklist_items ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE checklist_items SET syncId = lower(hex(randomblob(16))), updatedAt = createdAt")
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_checklist_items_syncId ON checklist_items(syncId)")
+
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS sync_tombstones (
+                        recordType TEXT NOT NULL,
+                        syncId TEXT NOT NULL,
+                        deletedAt INTEGER NOT NULL,
+                        PRIMARY KEY(recordType, syncId)
+                    )"""
+                )
+            }
+        }
+
         @Volatile
         private var INSTANCE: ChecklistDatabase? = null
 
@@ -47,7 +71,7 @@ abstract class ChecklistDatabase : RoomDatabase() {
                     ChecklistDatabase::class.java,
                     "checklist_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

@@ -197,4 +197,19 @@
     <string name="recurrence_month_day">Giorno %1$d</string>
     <string name="recurrence_reset_time">Orario di ripristino: %1$s</string>
     <string name="recurrence_month_end_note">Nei mesi più brevi, il ripristino avviene l’ultimo giorno.</string>
+    <string name="drive_backup_title">Backup su Google Drive</string>
+    <string name="drive_backup_description">Sincronizza automaticamente contenuti, progressi e foto delle checklist. Tickfolio accede solo ai file che crea.</string>
+    <string name="drive_folder_name_label">Cartella in Il mio Drive</string>
+    <string name="drive_folder_name_description">Un singolo nome di cartella direttamente in Il mio Drive. Tickfolio la crea se necessario.</string>
+    <string name="drive_folder_save">Salva cartella</string>
+    <string name="drive_last_sync">Ultima sincronizzazione: %1$s</string>
+    <string name="drive_sync_authorization_required">È necessario rinnovare l’accesso a Google Drive.</string>
+    <string name="drive_sync_failed">Sincronizzazione in attesa di un nuovo tentativo. Controlla la connessione e le impostazioni di Drive.</string>
+    <string name="drive_reconnect">Riconnetti Google Drive</string>
+    <string name="drive_consent_title">Eseguire il backup e sincronizzare con Google Drive?</string>
+    <string name="drive_consent_message">Con il tuo consenso, Tickfolio caricherà automaticamente checklist, progressi degli elementi e foto nella cartella “%1$s” in Il mio Drive. Puoi disattivare la sincronizzazione in qualsiasi momento dalle Impostazioni. Tickfolio richiede l’accesso solo ai file che crea.</string>
+    <string name="drive_consent_enable">Attiva backup</string>
+    <string name="drive_consent_not_now">Non ora</string>
+    <string name="drive_auth_failed_title">Google Drive non disponibile</string>
+    <string name="drive_auth_failed_message">L’accesso a Drive non è stato concesso. Puoi attivare il backup o riconnetterti più tardi dalle Impostazioni.</string>
 </resources>

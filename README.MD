@@ -16,6 +16,8 @@ carry the details that make it useful.
 - Set date-and-time reminders or location-proximity reminders.
 - Automatically reset checklist items daily, weekly, or monthly, with a chosen
   reset time and (for weekly/monthly schedules) weekday or day of the month.
+- Optionally back up and sync checklists, completion progress, and photos with
+  Google Drive. Sync is off until enabled and authorized by the user.
 - Choose a geofence location on an interactive map, search for a place, or use
   the device's current location.
 - Add a home-screen widget for one checklist with tappable completion controls,
@@ -32,8 +34,9 @@ carry the details that make it useful.
   templates, and no preset reminders.
 
 Tickfolio is local-first: checklist data and item photos are stored on the
-device. There is no account or cloud-sync service. Map tiles are loaded from
-OpenStreetMap and therefore require an internet connection.
+device. Google Drive backup is optional and requires the user's consent;
+without it, data remains on the device. Map tiles are loaded from OpenStreetMap
+and therefore require an internet connection.
 
 ## Architecture
 
@@ -52,6 +55,10 @@ flowchart TD
     DAO --> Room[(Room database)]
     Repo --> Prefs[AppPreferences]
     Prefs --> Store[(DataStore)]
+    App[ChecklistApplication] --> Sync[Drive sync worker]
+    Sync --> Drive[Google Drive]
+    Sync --> Room
+    Sync --> Images[(App-private image files)]
     Screens --> Reminders[Alarm and geofence managers]
     Reminders --> Android[Android alarms, location, and notifications]
     Screens --> Images[ImageStorageHelper]
@@ -61,11 +68,12 @@ flowchart TD
 ```
 
 - **Application setup:** `ChecklistApplication` creates the Room database,
-  preferences store, repository, and geofence manager.
+  preferences store, repository, and geofence manager, and schedules enabled
+  Drive syncs.
 - **Data:** Room stores checklist and item records; `ChecklistDao` provides
   observable queries and mutations. `ChecklistRepository` coordinates database
   operations and preferences. DataStore holds the selected launch page, theme,
-  and latest-opened checklist.
+  latest-opened checklist, and optional Drive backup settings.
 - **UI:** `OverviewScreen` and `ChecklistDetailScreen` are backed by their own
   ViewModels. Reusable Compose components live under `ui/components`, with
   light/dark previews for key UI and the checklist icons.
@@ -78,7 +86,12 @@ flowchart TD
   and they are also restored on app launch. WorkManager periodically processes
   due recurring resets, including schedules missed while the device was off;
   checklist reset and next-run updates are committed atomically. Item images
-  are copied to app-private storage.
+  are copied to app-private storage. When enabled, WorkManager also syncs data
+  with Google Drive over a network connection after local edits and periodically.
+  A ZIP backup contains checklist and item data, deletion records, and photos.
+  Records are merged by stable sync ID, with the most recently edited version
+  winning; deleted records are tracked to prevent older device copies from
+  restoring them.
 - **Map picker:** The location picker draws OpenStreetMap tiles and supports
   map gestures, place search, and selecting a location.
 - **Home-screen widgets:** Glance renders a configurable single-checklist
@@ -90,8 +103,32 @@ widget prompts you to choose which saved checklist to show; tap a checklist
 item to toggle its completion, or tap the header to open it in the app. The
 all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
-The Room database has preserving migrations for schema versions 1 through 3.
+The Room database has preserving migrations for schema versions 1 through 4.
 Destructive fallback migration remains enabled for unsupported schema upgrades.
+
+## Google Drive backup setup
+
+Google Drive backup is optional. On first launch, Tickfolio asks whether to
+enable it; the setting can also be changed later in the overview's Settings
+dialog. When enabled, Tickfolio stores a `tickfolio_backup.zip` file inside an
+app-managed folder directly under **My Drive**. The folder name defaults to
+`Tickfolio` and can be changed in Settings. Checklist photos are included.
+Tickfolio requests the narrow `drive.file` permission and only reads or
+updates the folder and backup it creates. Disabling backup stops future syncs
+but leaves the existing Drive backup intact.
+
+To enable Drive access for a build, configure a Google Cloud project, enable
+the Google Drive API, configure its OAuth consent screen, and add an Android
+OAuth client matching the app's `applicationId` and the SHA-1 signing
+certificate used for that build. For a locally installed debug build, this is
+the debug signing certificate; distributed builds need a client matching their
+signing certificate. Run `.\gradlew.bat signingReport` to see the local
+certificate fingerprints. Without this setup, authorization and backup cannot
+complete.
+
+The archive is stored as a ZIP in the user's Drive account; Tickfolio does not
+apply additional client-side encryption. Keep access to the Google account
+secure.
 
 ## Nightly releases
 
@@ -120,7 +157,8 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   │   │   ├── model/          # Checklist and checklist-item entities
 │       │   │   │   ├── preferences/    # DataStore settings
 │       │   │   │   ├── reminder/       # Alarm and geofence notifications
-│       │   │   │   └── repository/     # Data access boundary
+│   │   │   │   ├── repository/     # Data access boundary
+│   │   │   │   └── sync/           # Drive backup, merge, and worker
 │       │   │   ├── widget/             # Glance widgets and checklist picker
 │       │   │   ├── ui/
 │       │   │   │   ├── components/     # Reusable Compose UI and previews

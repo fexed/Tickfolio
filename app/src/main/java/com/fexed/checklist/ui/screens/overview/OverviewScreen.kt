@@ -75,6 +75,8 @@ import com.fexed.checklist.ui.screens.settings.SettingsDialog
 @Composable
 fun OverviewScreen(
     viewModel: OverviewViewModel,
+    onToggleDriveBackup: (Boolean) -> Unit,
+    onReconnectDrive: () -> Unit,
     onOpenChecklist: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -498,6 +500,9 @@ fun OverviewScreen(
             userPreferences = uiState.userPreferences,
             onSetStartPage = { viewModel.setStartPage(it) },
             onSetThemeMode = { viewModel.setThemeMode(it) },
+            onSetDriveFolderName = { viewModel.setDriveFolderName(it) },
+            onToggleDriveBackup = onToggleDriveBackup,
+            onReconnectDrive = onReconnectDrive,
             onLoadSampleData = { viewModel.loadSampleData() },
             onDismiss = { showSettingsDialog = false }
         )

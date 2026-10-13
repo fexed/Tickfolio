@@ -53,5 +53,17 @@ object ImageStorageHelper {
             e.printStackTrace()
         }
     }
-}
 
+    fun copyImageToInternalStorage(context: Context, sourceFile: File): String {
+        require(sourceFile.isFile) { "Source image is missing" }
+        val dir = File(context.filesDir, IMAGES_DIR)
+        if (!dir.exists() && !dir.mkdirs()) {
+            throw IllegalStateException("Unable to create item image directory")
+        }
+        val targetFile = File(dir, "item_${UUID.randomUUID()}.jpg")
+        sourceFile.inputStream().use { input ->
+            FileOutputStream(targetFile).use { output -> input.copyTo(output) }
+        }
+        return targetFile.absolutePath
+    }
+}

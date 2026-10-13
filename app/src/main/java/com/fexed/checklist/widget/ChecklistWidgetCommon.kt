@@ -100,7 +100,7 @@ internal suspend fun toggleChecklistItem(
     completedChecks: Int
 ) {
     val app = context.applicationContext as ChecklistApplication
-    app.database.checklistDao().setItemCheckCount(itemId, completedChecks)
+    app.database.checklistDao().setItemCheckCount(itemId, completedChecks, System.currentTimeMillis())
     ChecklistWidgetUpdater.updateAll(context)
 }
 

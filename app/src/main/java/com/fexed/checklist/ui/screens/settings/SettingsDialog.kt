@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LightMode
@@ -25,11 +26,18 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,15 +50,26 @@ import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
 import com.fexed.checklist.ui.components.DialogPreviewSurface
 import com.fexed.checklist.ui.theme.ChecklistTheme
+import java.text.DateFormat
+import java.util.Date
+
+private const val MAX_DRIVE_FOLDER_NAME_LENGTH = 80
+private const val AUTHORIZATION_REQUIRED = "authorization_required"
 
 @Composable
 fun SettingsDialog(
     userPreferences: UserPreferences,
     onSetStartPage: (StartPageOption) -> Unit,
     onSetThemeMode: (ThemeMode) -> Unit,
+    onSetDriveFolderName: (String) -> Unit,
+    onToggleDriveBackup: (Boolean) -> Unit,
+    onReconnectDrive: () -> Unit,
     onLoadSampleData: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    var driveFolderName by remember(userPreferences.driveFolderName) {
+        mutableStateOf(userPreferences.driveFolderName)
+    }
     val dialogTitle: @Composable () -> Unit = {
             Text(
                 text = stringResource(R.string.settings_title),
@@ -157,6 +176,94 @@ fun SettingsDialog(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Cloud,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.drive_backup_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = stringResource(R.string.drive_backup_description),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = userPreferences.driveBackupEnabled,
+                        onCheckedChange = onToggleDriveBackup,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = driveFolderName,
+                    onValueChange = {
+                        driveFolderName = it
+                            .filterNot { character -> character == '/' || character == '\\' }
+                            .take(MAX_DRIVE_FOLDER_NAME_LENGTH)
+                    },
+                    label = { Text(stringResource(R.string.drive_folder_name_label)) },
+                    supportingText = { Text(stringResource(R.string.drive_folder_name_description)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+                val validFolderName = driveFolderName.trim().isNotEmpty() &&
+                    '/' !in driveFolderName && '\\' !in driveFolderName
+                if (driveFolderName.trim() != userPreferences.driveFolderName && validFolderName) {
+                    OutlinedButton(
+                        onClick = { onSetDriveFolderName(driveFolderName.trim()) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(stringResource(R.string.drive_folder_save))
+                    }
+                }
+                userPreferences.lastDriveSyncAt?.let { lastSyncAt ->
+                    Text(
+                        text = stringResource(
+                            R.string.drive_last_sync,
+                            DateFormat.getDateTimeInstance().format(Date(lastSyncAt))
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                userPreferences.driveSyncError?.let { error ->
+                    val message = if (error == AUTHORIZATION_REQUIRED) {
+                        R.string.drive_sync_authorization_required
+                    } else {
+                        R.string.drive_sync_failed
+                    }
+                    Text(
+                        text = stringResource(message),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    if (error == AUTHORIZATION_REQUIRED && userPreferences.driveBackupEnabled) {
+                        TextButton(onClick = onReconnectDrive) {
+                            Text(stringResource(R.string.drive_reconnect))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(16.dp))
+
                 // Section 3: Sample data
                 Text(
                     text = stringResource(R.string.section_sample_checklists),
@@ -232,6 +339,9 @@ private fun SettingsDialogPreview() {
             ),
             onSetStartPage = {},
             onSetThemeMode = {},
+            onSetDriveFolderName = {},
+            onToggleDriveBackup = {},
+            onReconnectDrive = {},
             onLoadSampleData = {},
             onDismiss = {}
         )

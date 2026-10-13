@@ -5,6 +5,7 @@ import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
 import com.fexed.checklist.data.recurrence.RecurringChecklistScheduler
+import com.fexed.checklist.data.sync.DriveSyncScheduler
 import com.fexed.checklist.data.repository.ChecklistRepository
 import com.fexed.checklist.util.SampleDataProvider
 import kotlinx.coroutines.CoroutineScope
@@ -33,10 +34,34 @@ class ChecklistApplication : Application() {
         RecurringChecklistScheduler.ensureScheduled(this)
         applicationScope.launch {
             database.invalidationTracker
-                .createFlow("checklists", "checklist_items")
+                .createFlow("checklists", "checklist_items", "sync_tombstones")
                 .debounce(250)
                 .collect {
                     ChecklistWidgetUpdater.updateAll(this@ChecklistApplication)
+                }
+        }
+        applicationScope.launch {
+            database.invalidationTracker
+                .createFlow("checklists", "checklist_items", "sync_tombstones")
+                .debounce(2_000)
+                .collect {
+                    val backupEnabled = appPreferences.userPreferencesFlow
+                        .map { it.driveBackupEnabled }
+                        .first()
+                    if (backupEnabled) DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
+                }
+        }
+        applicationScope.launch {
+            appPreferences.userPreferencesFlow
+                .map { it.driveBackupEnabled to it.driveFolderName }
+                .distinctUntilChanged()
+                .collect { (enabled, _) ->
+                    if (enabled) {
+                        DriveSyncScheduler.ensureScheduled(this@ChecklistApplication)
+                        DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
+                    } else {
+                        DriveSyncScheduler.cancel(this@ChecklistApplication)
+                    }
                 }
         }
         applicationScope.launch {

@@ -149,6 +149,12 @@ class OverviewViewModel(
         }
     }
 
+    fun setDriveFolderName(name: String) {
+        viewModelScope.launch {
+            repository.setDriveFolderName(name)
+        }
+    }
+
     fun loadSampleData() {
         viewModelScope.launch {
             SampleDataProvider.populateSampleData(checklistDao)

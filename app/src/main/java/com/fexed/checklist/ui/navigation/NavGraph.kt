@@ -38,6 +38,8 @@ fun ChecklistNavGraph(
     checklistDao: ChecklistDao,
     userPreferences: UserPreferences?,
     initialChecklistId: Long? = null,
+    onToggleDriveBackup: (Boolean) -> Unit,
+    onReconnectDrive: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var hasHandledInitialNavigation by remember { mutableStateOf(false) }
@@ -71,6 +73,8 @@ fun ChecklistNavGraph(
             )
             OverviewScreen(
                 viewModel = overviewViewModel,
+                onToggleDriveBackup = onToggleDriveBackup,
+                onReconnectDrive = onReconnectDrive,
                 onOpenChecklist = { checklistId ->
                     navController.navigate(Screen.Detail.createRoute(checklistId))
                 }

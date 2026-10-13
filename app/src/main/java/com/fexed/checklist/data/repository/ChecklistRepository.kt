@@ -13,6 +13,7 @@ import com.fexed.checklist.util.RecurrenceSchedule
 import java.util.Calendar
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import java.util.UUID
 
 class ChecklistRepository(
     private val checklistDao: ChecklistDao,
@@ -62,6 +63,7 @@ class ChecklistRepository(
             colorTag = colorTag,
             createdAt = System.currentTimeMillis(),
             lastOpenedAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis(),
             reminderTime = reminderTime,
             geofenceLat = geofenceLat,
             geofenceLng = geofenceLng,
@@ -74,7 +76,9 @@ class ChecklistRepository(
     }
 
     suspend fun updateChecklist(checklist: Checklist) {
-        checklistDao.updateChecklist(checklist)
+        checklistDao.updateChecklist(
+            checklist.copy(updatedAt = maxOf(System.currentTimeMillis(), checklist.updatedAt + 1))
+        )
     }
 
     suspend fun updateChecklistReminders(
@@ -115,13 +119,14 @@ class ChecklistRepository(
                 recurrenceTimeMinutes = recurrence?.let { normalizedTime },
                 recurrenceDayOfWeek = recurrence?.let { normalizedDayOfWeek },
                 recurrenceDayOfMonth = recurrence?.let { normalizedDayOfMonth },
-                recurrenceNextAt = nextRecurrenceAt
+                recurrenceNextAt = nextRecurrenceAt,
+                updatedAt = maxOf(now, checklist.updatedAt + 1)
             )
         )
     }
 
     suspend fun deleteChecklist(id: Long) {
-        checklistDao.deleteChecklistById(id)
+        checklistDao.deleteChecklistWithTombstone(id, System.currentTimeMillis())
     }
 
     suspend fun duplicateChecklist(checklistId: Long): Long? {
@@ -130,16 +135,20 @@ class ChecklistRepository(
             id = 0,
             title = "${existing.checklist.title} (Copy)",
             createdAt = System.currentTimeMillis(),
-            lastOpenedAt = System.currentTimeMillis()
+            lastOpenedAt = System.currentTimeMillis(),
+            syncId = UUID.randomUUID().toString(),
+            updatedAt = System.currentTimeMillis()
         )
         val newId = checklistDao.insertChecklist(newChecklist)
         val newItems = existing.items.map { item ->
             item.copy(
                 id = 0,
                 checklistId = newId,
+                syncId = UUID.randomUUID().toString(),
                 isCompleted = false,
                 completedChecks = 0,
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
+                updatedAt = System.currentTimeMillis()
             )
         }
         checklistDao.insertItems(newItems)
@@ -170,27 +179,29 @@ class ChecklistRepository(
     }
 
     suspend fun updateItem(item: ChecklistItem) {
-        checklistDao.updateItem(item)
+        checklistDao.updateItem(
+            item.copy(updatedAt = maxOf(System.currentTimeMillis(), item.updatedAt + 1))
+        )
     }
 
     suspend fun deleteItem(id: Long) {
-        checklistDao.deleteItemById(id)
+        checklistDao.deleteItemWithTombstone(id, System.currentTimeMillis())
     }
 
     suspend fun toggleItemCompleted(id: Long, isCompleted: Boolean) {
-        checklistDao.setItemCompleted(id, isCompleted)
+        checklistDao.setItemCompleted(id, isCompleted, System.currentTimeMillis())
     }
 
     suspend fun setItemCheckCount(id: Long, completedChecks: Int) {
-        checklistDao.setItemCheckCount(id, completedChecks)
+        checklistDao.setItemCheckCount(id, completedChecks, System.currentTimeMillis())
     }
 
     suspend fun resetAllItems(checklistId: Long) {
-        checklistDao.resetAllItems(checklistId)
+        checklistDao.resetAllItems(checklistId, System.currentTimeMillis())
     }
 
     suspend fun completeAllItems(checklistId: Long) {
-        checklistDao.completeAllItems(checklistId)
+        checklistDao.completeAllItems(checklistId, System.currentTimeMillis())
     }
 
     // Settings
@@ -200,5 +211,9 @@ class ChecklistRepository(
 
     suspend fun setThemeMode(mode: ThemeMode) {
         appPreferences.setThemeMode(mode)
+    }
+
+    suspend fun setDriveFolderName(name: String) {
+        appPreferences.setDriveFolderName(name)
     }
 }

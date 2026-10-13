@@ -197,4 +197,19 @@
     <string name="recurrence_month_day">Day %1$d</string>
     <string name="recurrence_reset_time">Reset time: %1$s</string>
     <string name="recurrence_month_end_note">In shorter months, the reset happens on the last day.</string>
+    <string name="drive_backup_title">Google Drive backup</string>
+    <string name="drive_backup_description">Automatically sync checklist content, progress, and photos. Tickfolio only accesses files it creates.</string>
+    <string name="drive_folder_name_label">My Drive folder</string>
+    <string name="drive_folder_name_description">A single folder name directly inside My Drive. Tickfolio creates it if needed.</string>
+    <string name="drive_folder_save">Save folder</string>
+    <string name="drive_last_sync">Last sync: %1$s</string>
+    <string name="drive_sync_authorization_required">Google Drive access needs to be renewed.</string>
+    <string name="drive_sync_failed">Sync is waiting to retry. Check your connection and Drive settings.</string>
+    <string name="drive_reconnect">Reconnect Google Drive</string>
+    <string name="drive_consent_title">Back up and sync with Google Drive?</string>
+    <string name="drive_consent_message">With your consent, Tickfolio automatically uploads your checklists, item progress, and photos to the “%1$s” folder in My Drive. You can turn syncing off at any time in Settings. Tickfolio only requests access to files it creates.</string>
+    <string name="drive_consent_enable">Enable backup</string>
+    <string name="drive_consent_not_now">Not now</string>
+    <string name="drive_auth_failed_title">Google Drive unavailable</string>
+    <string name="drive_auth_failed_message">Drive access was not granted. You can enable backup or reconnect later in Settings.</string>
 </resources>

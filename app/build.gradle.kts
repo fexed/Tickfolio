@@ -77,6 +77,10 @@ dependencies {
     // Persistent recurring checklist resets
     implementation(libs.androidx.work.runtime)
 
+    // Google Drive OAuth and backup serialization
+    implementation(libs.play.services.auth)
+    implementation(libs.gson)
+
     // Play Services Location (Geofencing)
     implementation(libs.play.services.location)
 
