@@ -48,7 +48,6 @@
     <string name="checklist_options_desc">Checklist options</string>
     <string name="progress_no_items">No items yet</string>
     <string name="progress_format">%1$d of %2$d completed</string>
-    <string name="alarm_set_badge">Alarm set</string>
     <string name="geofence_active_badge">Geofence active</string>
     <string name="more_tags_format">+%1$d more</string>
 

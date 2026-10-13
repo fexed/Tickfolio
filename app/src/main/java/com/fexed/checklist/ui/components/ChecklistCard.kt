@@ -1,5 +1,6 @@
 package com.fexed.checklist.ui.components
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,6 +44,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -260,7 +262,14 @@ fun ChecklistCard(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = stringResource(R.string.alarm_set_badge),
+                                text = DateUtils.formatDateTime(
+                                    LocalContext.current,
+                                    checklist.reminderTime,
+                                    DateUtils.FORMAT_SHOW_DATE or
+                                        DateUtils.FORMAT_ABBREV_MONTH or
+                                        DateUtils.FORMAT_SHOW_TIME or
+                                        DateUtils.FORMAT_NO_YEAR
+                                ),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
