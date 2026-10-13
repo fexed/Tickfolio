@@ -27,6 +27,13 @@
 
     <!-- Overview Screen -->
     <string name="overview_title">Checklists</string>
+    <string name="selected_checklists_count">%1$d selected</string>
+    <string name="clear_checklist_selection">Clear selection</string>
+    <string name="delete_selected_checklists_desc">Delete selected checklists</string>
+    <string name="select_all_checklists">Select all checklists</string>
+    <string name="unselect_all_checklists">Unselect all checklists</string>
+    <string name="select_checklist_desc">Select checklist</string>
+    <string name="deselect_checklist_desc">Deselect checklist</string>
     <string name="search_hint_overview">Search title, items, tags…</string>
     <string name="clear_search_desc">Clear search</string>
     <string name="close_search_desc">Close Search</string>
@@ -99,6 +106,8 @@
     <string name="dialog_title_delete_checklist">Delete Checklist</string>
     <string name="dialog_msg_delete_checklist">Are you sure you want to delete this checklist? All items within it will be permanently removed.</string>
     <string name="dialog_msg_delete_named_checklist">Are you sure you want to delete \'%1$s\'? This action cannot be undone.</string>
+    <string name="dialog_title_delete_selected_checklists">Delete selected checklists?</string>
+    <string name="dialog_msg_delete_selected_checklists">Delete %1$d selected checklists? Their items will also be permanently removed.</string>
 
     <!-- BottomSheet: Edit / Create Item -->
     <string name="sheet_title_new_item">New Item</string>

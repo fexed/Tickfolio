@@ -1,8 +1,6 @@
 package com.fexed.checklist.ui.screens.overview
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +23,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -87,8 +87,14 @@ fun OverviewScreen(
     var editingChecklist by remember { mutableStateOf<Checklist?>(null) }
     var reminderChecklist by remember { mutableStateOf<Checklist?>(null) }
     var deletingChecklistId by remember { mutableStateOf<Long?>(null) }
+    var showDeleteSelectedDialog by remember { mutableStateOf(false) }
+    var selectedChecklistIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var showSettingsDialog by remember { mutableStateOf(false) }
     var searchActive by remember { mutableStateOf(false) }
+    val isSelectionMode = selectedChecklistIds.isNotEmpty()
+    val visibleChecklistIds = uiState.checklists.map { it.checklist.id }
+    val allVisibleChecklistsSelected = visibleChecklistIds.isNotEmpty() &&
+        visibleChecklistIds.all { it in selectedChecklistIds }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -100,32 +106,83 @@ fun OverviewScreen(
             containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    if (isSelectionMode) {
+                        IconButton(onClick = { selectedChecklistIds = emptySet() }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.clear_checklist_selection),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                    }
+                },
                 title = {
                     Text(
-                        text = stringResource(R.string.overview_title),
+                        text = if (isSelectionMode) {
+                            stringResource(R.string.selected_checklists_count, selectedChecklistIds.size)
+                        } else {
+                            stringResource(R.string.overview_title)
+                        },
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 },
                 actions = {
-                    IconButton(onClick = {
-                        searchActive = !searchActive
-                        if (!searchActive) {
-                            viewModel.onSearchQueryChanged("")
+                    if (isSelectionMode) {
+                        IconButton(
+                            onClick = {
+                                selectedChecklistIds = if (allVisibleChecklistsSelected) {
+                                    emptySet()
+                                } else {
+                                    selectedChecklistIds + visibleChecklistIds
+                                }
+                            },
+                            enabled = visibleChecklistIds.isNotEmpty()
+                        ) {
+                            Icon(
+                                imageVector = if (allVisibleChecklistsSelected) {
+                                    Icons.Default.Clear
+                                } else {
+                                    Icons.Default.Checklist
+                                },
+                                contentDescription = stringResource(
+                                    if (allVisibleChecklistsSelected) {
+                                        R.string.unselect_all_checklists
+                                    } else {
+                                        R.string.select_all_checklists
+                                    }
+                                ),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
                         }
-                    }) {
-                        Icon(
-                            imageVector = if (searchActive) Icons.Default.Clear else Icons.Default.Search,
-                            contentDescription = if (searchActive) stringResource(R.string.close_search_desc) else stringResource(R.string.search_desc),
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                    IconButton(onClick = { showSettingsDialog = true }) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = stringResource(R.string.settings_desc),
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
+                        IconButton(onClick = { showDeleteSelectedDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.delete_selected_checklists_desc),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    } else {
+                        IconButton(onClick = {
+                            searchActive = !searchActive
+                            if (!searchActive) {
+                                viewModel.onSearchQueryChanged("")
+                            }
+                        }) {
+                            Icon(
+                                imageVector = if (searchActive) Icons.Default.Clear else Icons.Default.Search,
+                                contentDescription = if (searchActive) stringResource(R.string.close_search_desc) else stringResource(R.string.search_desc),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        IconButton(onClick = { showSettingsDialog = true }) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = stringResource(R.string.settings_desc),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -134,13 +191,15 @@ fun OverviewScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCreateDialog = true },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = CircleShape
-            ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.create_checklist_fab))
+            if (!isSelectionMode) {
+                FloatingActionButton(
+                    onClick = { showCreateDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = CircleShape
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.create_checklist_fab))
+                }
             }
         }
     ) { innerPadding ->
@@ -273,7 +332,27 @@ fun OverviewScreen(
                     ) { checklistWithItems ->
                         ChecklistCard(
                             checklistWithItems = checklistWithItems,
-                            onClick = { onOpenChecklist(checklistWithItems.checklist.id) },
+                            isSelected = checklistWithItems.checklist.id in selectedChecklistIds,
+                            onClick = {
+                                val id = checklistWithItems.checklist.id
+                                if (selectedChecklistIds.isNotEmpty()) {
+                                    selectedChecklistIds = if (id in selectedChecklistIds) {
+                                        selectedChecklistIds - id
+                                    } else {
+                                        selectedChecklistIds + id
+                                    }
+                                } else {
+                                    onOpenChecklist(id)
+                                }
+                            },
+                            onLongClick = {
+                                val id = checklistWithItems.checklist.id
+                                selectedChecklistIds = if (id in selectedChecklistIds) {
+                                    selectedChecklistIds - id
+                                } else {
+                                    selectedChecklistIds + id
+                                }
+                            },
                             onEdit = { editingChecklist = checklistWithItems.checklist },
                             onDuplicate = { viewModel.duplicateChecklist(checklistWithItems.checklist.id) },
                             onReset = { viewModel.resetChecklist(checklistWithItems.checklist.id) },
@@ -366,6 +445,7 @@ fun OverviewScreen(
                 Button(
                     onClick = {
                         viewModel.deleteChecklist(id)
+                        selectedChecklistIds = selectedChecklistIds - id
                         deletingChecklistId = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -375,6 +455,35 @@ fun OverviewScreen(
             },
             dismissButton = {
                 TextButton(onClick = { deletingChecklistId = null }) {
+                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+
+    if (showDeleteSelectedDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteSelectedDialog = false },
+            title = { Text(stringResource(R.string.dialog_title_delete_selected_checklists)) },
+            text = {
+                Text(stringResource(R.string.dialog_msg_delete_selected_checklists, selectedChecklistIds.size))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteChecklists(selectedChecklistIds)
+                        selectedChecklistIds = emptySet()
+                        showDeleteSelectedDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(R.string.action_delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteSelectedDialog = false }) {
                     Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },

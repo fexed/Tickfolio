@@ -102,6 +102,12 @@ class OverviewViewModel(
         }
     }
 
+    fun deleteChecklists(ids: Set<Long>) {
+        viewModelScope.launch {
+            ids.forEach { repository.deleteChecklist(it) }
+        }
+    }
+
     fun updateReminders(
         checklistId: Long,
         reminderTime: Long?,

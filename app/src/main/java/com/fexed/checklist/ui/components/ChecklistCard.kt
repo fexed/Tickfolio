@@ -3,7 +3,8 @@ package com.fexed.checklist.ui.components
 import android.text.format.DateUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.Checklist
@@ -57,7 +60,7 @@ import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun ChecklistCard(
     checklistWithItems: ChecklistWithItems,
@@ -66,8 +69,10 @@ fun ChecklistCard(
     onDuplicate: () -> Unit,
     onReset: () -> Unit,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
     onConfigureReminders: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    isSelected: Boolean = false,
+    onLongClick: (() -> Unit)? = null
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     val checklist = checklistWithItems.checklist
@@ -81,14 +86,25 @@ fun ChecklistCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .border(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
                 shape = RoundedCornerShape(16.dp)
             )
-            .clickable { onClick() },
+            .semantics { selected = isSelected }
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick,
+                onLongClickLabel = if (onLongClick == null) null else stringResource(
+                    if (isSelected) R.string.deselect_checklist_desc else R.string.select_checklist_desc
+                )
+            ),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {

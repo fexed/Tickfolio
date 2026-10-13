@@ -12,6 +12,7 @@ carry the details that make it useful.
 - Add checklist items with descriptions, tags, completion state, and a photo
   from the camera or gallery.
 - Search checklists and filter checklist items by text, tag, or completion.
+- Long-press a checklist in the overview to select multiple checklists for deletion.
 - Set date-and-time reminders or location-proximity reminders.
 - Choose a geofence location on an interactive map, search for a place, or use
   the device's current location.

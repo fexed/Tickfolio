@@ -27,6 +27,13 @@
 
     <!-- Schermata delle checklist -->
     <string name="overview_title">Checklist</string>
+    <string name="selected_checklists_count">%1$d selezionate</string>
+    <string name="clear_checklist_selection">Cancella selezione</string>
+    <string name="delete_selected_checklists_desc">Elimina le checklist selezionate</string>
+    <string name="select_all_checklists">Seleziona tutte le checklist</string>
+    <string name="unselect_all_checklists">Deseleziona tutte le checklist</string>
+    <string name="select_checklist_desc">Seleziona checklist</string>
+    <string name="deselect_checklist_desc">Deseleziona checklist</string>
     <string name="search_hint_overview">Cerca per titolo, elementi o tag…</string>
     <string name="clear_search_desc">Cancella la ricerca</string>
     <string name="close_search_desc">Chiudi la ricerca</string>
@@ -99,6 +106,8 @@
     <string name="dialog_title_delete_checklist">Elimina checklist</string>
     <string name="dialog_msg_delete_checklist">Vuoi davvero eliminare questa checklist? Tutti gli elementi al suo interno verranno rimossi definitivamente.</string>
     <string name="dialog_msg_delete_named_checklist">Vuoi davvero eliminare \'%1$s\'? Questa azione non può essere annullata.</string>
+    <string name="dialog_title_delete_selected_checklists">Eliminare le checklist selezionate?</string>
+    <string name="dialog_msg_delete_selected_checklists">Eliminare %1$d checklist selezionate? Anche i relativi elementi verranno rimossi definitivamente.</string>
 
     <!-- Pannello inferiore: modifica e creazione elemento -->
     <string name="sheet_title_new_item">Nuovo elemento</string>
