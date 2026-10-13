@@ -3,6 +3,7 @@ package com.fexed.checklist.util
 import com.fexed.checklist.data.local.ChecklistDao
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistWithItems
 
 object SampleDataProvider {
 
@@ -165,5 +166,157 @@ object SampleDataProvider {
                 )
             )
         )
+
+        defaultTemplates(now).forEach { template ->
+            val checklistId = dao.insertChecklist(template.checklist)
+            dao.insertItems(template.items.map { it.copy(checklistId = checklistId) })
+        }
     }
+
+    internal fun defaultTemplates(now: Long): List<ChecklistWithItems> = listOf(
+        template(
+            "Weekend Trip",
+            "Pack the essentials and get your home ready before heading out.",
+            "trip", 0xFF7C5C3BL, now,
+            listOf(
+                "Check travel documents and booking details" to "Documents",
+                "Pack outfits, underwear, and sleepwear" to "Clothing",
+                "Pack toiletries and personal essentials" to "Personal",
+                "Pack phone charger and any required adapters" to "Tech",
+                "Download tickets, directions, and offline maps" to "Travel",
+                "Check windows, appliances, and door locks before leaving" to "Home"
+            )
+        ),
+        template(
+            "Weekly Home Reset",
+            "A room-by-room refresh to start the week with a tidy space.",
+            "home", 0xFF8C593EL, now,
+            listOf(
+                "Put away items left on tables and counters" to "General",
+                "Wipe kitchen counters and clean the sink" to "Kitchen",
+                "Clean bathroom surfaces and mirrors" to "Bathroom",
+                "Change towels and bed linens" to "Laundry",
+                "Dust surfaces and vacuum floors" to "General",
+                "Empty bins and sort recycling" to "Waste"
+            )
+        ),
+        template(
+            "Grocery Run",
+            "Plan meals and pick up what you need without buying duplicates.",
+            "shopping", 0xFF5C6B52L, now,
+            listOf(
+                "Check the fridge, freezer, and pantry" to "Planning",
+                "Choose meals for the next few days" to "Planning",
+                "Add fruit and vegetables to your shopping list" to "Produce",
+                "Add proteins and chilled essentials" to "Chilled",
+                "Add pantry staples and snacks" to "Pantry",
+                "Check household supplies and bring reusable bags" to "Household"
+            )
+        ),
+        template(
+            "Car Trip Preparation",
+            "Review your vehicle and travel essentials before a longer drive.",
+            "car", 0xFF5C6B52L, now,
+            listOf(
+                "Check tire pressure against the vehicle's recommended values" to "Wheels",
+                "Check fluid levels following the owner's manual" to "Fluids",
+                "Check lights, indicators, and wipers" to "Visibility",
+                "Review warning lights and any maintenance due" to "Maintenance",
+                "Check required documents and emergency supplies" to "Essentials",
+                "Plan the route, rest stops, and fuel or charging stops" to "Travel"
+            )
+        ),
+        template(
+            "Productive Workday",
+            "Start with clear priorities and finish with a clean handover to tomorrow.",
+            "work", 0xFF7C5C3BL, now,
+            listOf(
+                "Review today's calendar and deadlines" to "Planning",
+                "Choose your three most important tasks" to "Priorities",
+                "Gather the notes and files needed for your first task" to "Preparation",
+                "Set aside a focused work session" to "Focus",
+                "Review messages and follow up on outstanding requests" to "Communication",
+                "Record progress and write tomorrow's next steps" to "Wrap-up"
+            )
+        ),
+        template(
+            "Moving Home",
+            "Keep the practical details of a move in one place.",
+            "home", 0xFF8C593EL, now,
+            listOf(
+                "Confirm moving dates, access, and transport" to "Planning",
+                "Sort belongings to keep, donate, or recycle" to "Sorting",
+                "Label boxes by room and contents" to "Packing",
+                "Pack a separate bag of first-night essentials" to "Essentials",
+                "Arrange utility changes and update relevant addresses" to "Admin",
+                "Photograph meter readings and property condition where applicable" to "Handover",
+                "Check every room and return or collect keys" to "Handover"
+            )
+        ),
+        template(
+            "Laundry Day",
+            "Work through laundry loads from washing to putting everything away.",
+            "home", 0xFF8C593EL, now,
+            listOf(
+                "Wash laundry loads" to "Washing",
+                "Dry laundry loads" to "Drying",
+                "Fold and put away laundry loads" to "Putting Away",
+                "Refresh towels and linens" to "Linens",
+                "Clean the lint filter and laundry area" to "Maintenance"
+            ),
+            multiCheckCounts = mapOf(
+                "Wash laundry loads" to 3,
+                "Dry laundry loads" to 3,
+                "Fold and put away laundry loads" to 3
+            )
+        ),
+        template(
+            "Hosting Friends",
+            "Get the shared space and refreshments ready for guests.",
+            "cooking", 0xFF7C5C3BL, now,
+            listOf(
+                "Set out chairs" to "Setup",
+                "Prepare place settings" to "Setup",
+                "Plan food and drinks" to "Food",
+                "Tidy the shared spaces" to "Home",
+                "Set out serving dishes and utensils" to "Setup",
+                "Check guest arrival details" to "Planning"
+            ),
+            multiCheckCounts = mapOf(
+                "Set out chairs" to 6,
+                "Prepare place settings" to 6
+            )
+        )
+    )
+
+    private fun template(
+        title: String,
+        description: String,
+        iconName: String,
+        colorTag: Long,
+        now: Long,
+        items: List<Pair<String, String>>,
+        multiCheckCounts: Map<String, Int> = emptyMap()
+    ) = ChecklistWithItems(
+        checklist = Checklist(
+            title = title,
+            description = description,
+            iconName = iconName,
+            colorTag = colorTag,
+            createdAt = now,
+            lastOpenedAt = now
+        ),
+        items = items.mapIndexed { position, (itemTitle, tag) ->
+            ChecklistItem(
+                checklistId = 0,
+                title = itemTitle,
+                tag = tag,
+                isCompleted = false,
+                requiredChecks = multiCheckCounts[itemTitle] ?: 1,
+                completedChecks = 0,
+                position = position,
+                createdAt = now
+            )
+        }
+    )
 }
