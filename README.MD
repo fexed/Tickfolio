@@ -21,8 +21,12 @@ carry the details that make it useful.
   select system, light paper, or dark parchment appearance.
 - On Android 13 and later, change the app language in system settings under
   **Settings > Apps > Tickfolio > Language** (English or Italian).
-- Start with sample checklists, which are added automatically on first launch
-  when the local database is empty.
+- Load sample checklists from the overview's sample-data action, including the
+  original trip, car maintenance, and cleaning examples plus eight unchecked
+  templates: Weekend Trip, Weekly Home Reset, Grocery Run, Car Trip Preparation,
+  Productive Workday, Moving Home, Laundry Day, and Hosting Friends. Templates
+  include tags, multi-check items in the Laundry Day and Hosting Friends
+  templates, and no preset reminders.
 
 Tickfolio is local-first: checklist data and item photos are stored on the
 device. There is no account or cloud-sync service. Map tiles are loaded from
@@ -54,8 +58,7 @@ flowchart TD
 ```
 
 - **Application setup:** `ChecklistApplication` creates the Room database,
-  preferences store, repository, and geofence manager, and seeds sample data
-  when the database is empty.
+  preferences store, repository, and geofence manager.
 - **Data:** Room stores checklist and item records; `ChecklistDao` provides
   observable queries and mutations. `ChecklistRepository` coordinates database
   operations and preferences. DataStore holds the selected launch page, theme,
