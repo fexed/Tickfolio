@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
+import android.text.format.DateUtils
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -434,7 +435,14 @@ fun ChecklistDetailScreen(
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
                                         Text(
-                                            text = stringResource(R.string.alarm_set_badge),
+                                            text = DateUtils.formatDateTime(
+                                                context,
+                                                currentChecklist.reminderTime,
+                                                DateUtils.FORMAT_SHOW_DATE or
+                                                    DateUtils.FORMAT_ABBREV_MONTH or
+                                                    DateUtils.FORMAT_SHOW_TIME or
+                                                    DateUtils.FORMAT_NO_YEAR
+                                            ),
                                             style = MaterialTheme.typography.labelMedium,
                                             color = MaterialTheme.colorScheme.onSecondaryContainer
                                         )

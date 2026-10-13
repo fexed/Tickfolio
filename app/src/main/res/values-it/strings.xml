@@ -48,7 +48,6 @@
     <string name="checklist_options_desc">Opzioni checklist</string>
     <string name="progress_no_items">Nessun elemento</string>
     <string name="progress_format">%1$d di %2$d completati</string>
-    <string name="alarm_set_badge">Sveglia impostata</string>
     <string name="geofence_active_badge">Avviso di posizione attivo</string>
     <string name="more_tags_format">altri %1$d</string>
 
