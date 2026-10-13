@@ -81,26 +81,30 @@ class ChecklistDetailViewModel(
         _hideCompleted.value = !_hideCompleted.value
     }
 
-    fun toggleItemCompleted(id: Long, completed: Boolean) {
+    fun setItemCheckCount(id: Long, completedChecks: Int) {
         viewModelScope.launch {
-            repository.toggleItemCompleted(id, completed)
+            repository.setItemCheckCount(id, completedChecks)
         }
     }
 
-    fun addItem(title: String, description: String, tag: String, imageUri: String?) {
+    fun addItem(title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) {
         viewModelScope.launch {
-            repository.addItem(checklistId, title, description, tag, imageUri)
+            repository.addItem(checklistId, title, description, tag, imageUri, requiredChecks)
         }
     }
 
-    fun updateItem(item: ChecklistItem, title: String, description: String, tag: String, imageUri: String?) {
+    fun updateItem(item: ChecklistItem, title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) {
         viewModelScope.launch {
+            val completedChecks = item.completedChecks.coerceIn(0, requiredChecks)
             repository.updateItem(
                 item.copy(
                     title = title,
                     description = description,
                     tag = tag,
-                    imageUri = imageUri
+                    imageUri = imageUri,
+                    isCompleted = completedChecks >= requiredChecks,
+                    requiredChecks = requiredChecks,
+                    completedChecks = completedChecks
                 )
             )
         }

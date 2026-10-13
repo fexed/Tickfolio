@@ -92,6 +92,7 @@ class ChecklistRepository(
                 id = 0,
                 checklistId = newId,
                 isCompleted = false,
+                completedChecks = 0,
                 createdAt = System.currentTimeMillis()
             )
         }
@@ -105,7 +106,8 @@ class ChecklistRepository(
         title: String,
         description: String = "",
         tag: String = "",
-        imageUri: String? = null
+        imageUri: String? = null,
+        requiredChecks: Int = 1
     ): Long {
         val item = ChecklistItem(
             checklistId = checklistId,
@@ -114,6 +116,8 @@ class ChecklistRepository(
             tag = tag.trim(),
             imageUri = imageUri,
             isCompleted = false,
+            requiredChecks = requiredChecks.coerceAtLeast(1),
+            completedChecks = 0,
             createdAt = System.currentTimeMillis()
         )
         return checklistDao.insertItem(item)
@@ -129,6 +133,10 @@ class ChecklistRepository(
 
     suspend fun toggleItemCompleted(id: Long, isCompleted: Boolean) {
         checklistDao.setItemCompleted(id, isCompleted)
+    }
+
+    suspend fun setItemCheckCount(id: Long, completedChecks: Int) {
+        checklistDao.setItemCheckCount(id, completedChecks)
     }
 
     suspend fun resetAllItems(checklistId: Long) {

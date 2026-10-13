@@ -13,13 +13,13 @@ data class ChecklistWithItems(
     val items: List<ChecklistItem>
 ) {
     val totalCount: Int
-        get() = items.size
+        get() = items.sumOf { it.requiredChecks }
 
     val completedCount: Int
-        get() = items.count { it.isCompleted }
+        get() = items.sumOf { it.completedChecks.coerceIn(0, it.requiredChecks) }
 
     val progress: Float
-        get() = if (items.isEmpty()) 0f else completedCount.toFloat() / items.size
+        get() = if (totalCount == 0) 0f else completedCount.toFloat() / totalCount
 
     val tags: List<String>
         get() = items.map { it.tag.trim() }

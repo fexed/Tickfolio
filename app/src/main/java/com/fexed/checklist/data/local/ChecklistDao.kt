@@ -77,12 +77,15 @@ interface ChecklistDao {
     @Query("DELETE FROM checklist_items WHERE id = :id")
     suspend fun deleteItemById(id: Long): Int
 
-    @Query("UPDATE checklist_items SET isCompleted = :completed WHERE id = :id")
+    @Query("UPDATE checklist_items SET isCompleted = :completed, completedChecks = CASE WHEN :completed THEN requiredChecks ELSE 0 END WHERE id = :id")
     suspend fun setItemCompleted(id: Long, completed: Boolean): Int
 
-    @Query("UPDATE checklist_items SET isCompleted = 0 WHERE checklistId = :checklistId")
+    @Query("UPDATE checklist_items SET completedChecks = CASE WHEN :completedChecks < 0 THEN 0 WHEN :completedChecks > requiredChecks THEN requiredChecks ELSE :completedChecks END, isCompleted = CASE WHEN :completedChecks >= requiredChecks THEN 1 ELSE 0 END WHERE id = :id")
+    suspend fun setItemCheckCount(id: Long, completedChecks: Int): Int
+
+    @Query("UPDATE checklist_items SET isCompleted = 0, completedChecks = 0 WHERE checklistId = :checklistId")
     suspend fun resetAllItems(checklistId: Long): Int
 
-    @Query("UPDATE checklist_items SET isCompleted = 1 WHERE checklistId = :checklistId")
+    @Query("UPDATE checklist_items SET isCompleted = 1, completedChecks = requiredChecks WHERE checklistId = :checklistId")
     suspend fun completeAllItems(checklistId: Long): Int
 }

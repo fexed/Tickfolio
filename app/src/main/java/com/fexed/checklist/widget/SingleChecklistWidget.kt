@@ -35,7 +35,7 @@ import com.fexed.checklist.MainActivity
 import com.fexed.checklist.R
 
 private val ItemIdParameter = ActionParameters.Key<Long>("checklist_item_id")
-private val CompletedParameter = ActionParameters.Key<Boolean>("is_completed")
+private val CompletedChecksParameter = ActionParameters.Key<Int>("completed_checks")
 
 class SingleChecklistWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
@@ -128,7 +128,7 @@ class SingleChecklistWidget : GlanceAppWidget() {
                                         actionRunCallback<ToggleChecklistWidgetItemAction>(
                                             parameters = actionParametersOf(
                                                 ItemIdParameter to item.id,
-                                                CompletedParameter to !item.isCompleted
+                                                CompletedChecksParameter to if (item.isCompleted) 0 else item.completedChecks + 1
                                             )
                                         )
                                     )
@@ -136,7 +136,11 @@ class SingleChecklistWidget : GlanceAppWidget() {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = if (item.isCompleted) "\u2713" else "\u25cb",
+                                    text = when {
+                                        item.isCompleted -> "\u2713"
+                                        item.completedChecks > 0 -> "${item.completedChecks}/${item.requiredChecks}"
+                                        else -> "\u25cb"
+                                    },
                                     style = TextStyle(
                                         color = if (item.isCompleted) colors.completed else colors.accent,
                                         fontSize = 16.sp,
@@ -177,7 +181,7 @@ class ToggleChecklistWidgetItemAction : ActionCallback {
         parameters: ActionParameters
     ) {
         val itemId = parameters[ItemIdParameter] ?: return
-        val completed = parameters[CompletedParameter] ?: return
-        toggleChecklistItem(context, itemId, completed)
+        val completedChecks = parameters[CompletedChecksParameter] ?: return
+        toggleChecklistItem(context, itemId, completedChecks)
     }
 }

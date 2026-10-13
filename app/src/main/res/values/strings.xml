@@ -47,7 +47,13 @@
     <string name="menu_delete">Delete</string>
     <string name="checklist_options_desc">Checklist options</string>
     <string name="progress_no_items">No items yet</string>
-    <string name="progress_format">%1$d of %2$d completed</string>
+    <string name="progress_format">%1$d of %2$d checks completed</string>
+    <string name="label_required_checks">Number of checks</string>
+    <string name="error_required_checks">Enter a number greater than zero</string>
+    <string name="item_checks_progress">%1$d of %2$d</string>
+    <string name="increase_item_checks">Increase completed checks</string>
+    <string name="decrease_item_checks">Decrease completed checks</string>
+    <string name="item_check_control_desc">%1$s: %2$d of %3$d checks complete</string>
     <string name="geofence_active_badge">Geofence active</string>
     <string name="more_tags_format">+%1$d more</string>
 

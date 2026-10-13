@@ -48,6 +48,28 @@ class ChecklistModelTest {
     }
 
     @Test
+    fun checklistWithItems_progressIncludesPartialAndRequiredChecks() {
+        val checklist = Checklist(id = 3, title = "Buy supplies")
+        val items = listOf(
+            ChecklistItem(
+                id = 1,
+                checklistId = 3,
+                title = "Buy 2 items",
+                requiredChecks = 2,
+                completedChecks = 1
+            ),
+            ChecklistItem(id = 2, checklistId = 3, title = "Pick up package", isCompleted = true)
+        )
+
+        val checklistWithItems = ChecklistWithItems(checklist, items)
+
+        assertEquals(3, checklistWithItems.totalCount)
+        assertEquals(2, checklistWithItems.completedCount)
+        assertEquals(2f / 3f, checklistWithItems.progress, 0.001f)
+        assertFalse(items.first().isCompleted)
+    }
+
+    @Test
     fun detailUiState_filterByTagAndQuery() {
         val checklist = Checklist(id = 1, title = "Apartment Cleaning")
         val items = listOf(
