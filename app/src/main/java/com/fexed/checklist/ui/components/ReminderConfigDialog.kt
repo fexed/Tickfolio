@@ -7,20 +7,26 @@ import android.app.TimePickerDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.LocationOn
@@ -31,6 +37,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,11 +64,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.Checklist
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.reminder.GeofenceManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.text.DateFormatSymbols
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.data.preferences.ThemeMode
@@ -74,7 +85,11 @@ fun ReminderConfigDialog(
         geofenceLat: Double?,
         geofenceLng: Double?,
         geofenceRadius: Float,
-        geofenceName: String?
+        geofenceName: String?,
+        recurrence: ChecklistRecurrence?,
+        recurrenceTimeMinutes: Int,
+        recurrenceDayOfWeek: Int,
+        recurrenceDayOfMonth: Int
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -92,6 +107,35 @@ fun ReminderConfigDialog(
     var longitudeText by remember { mutableStateOf(checklist.geofenceLng?.toString() ?: "") }
     var radiusText by remember { mutableStateOf(checklist.geofenceRadius.toInt().toString()) }
     var showMapPicker by remember { mutableStateOf(false) }
+
+    // Recurrence state
+    var enableRecurrence by remember { mutableStateOf(checklist.recurrenceFrequency != null) }
+    var selectedRecurrence by remember {
+        mutableStateOf(
+            ChecklistRecurrence.values().firstOrNull { it.name == checklist.recurrenceFrequency }
+                ?: ChecklistRecurrence.DAILY
+        )
+    }
+    var recurrenceTimeMinutes by remember { mutableStateOf(checklist.recurrenceTimeMinutes ?: 9 * 60) }
+    var recurrenceDayOfWeek by remember {
+        mutableStateOf(checklist.recurrenceDayOfWeek ?: Calendar.MONDAY)
+    }
+    var recurrenceDayOfMonth by remember { mutableStateOf(checklist.recurrenceDayOfMonth ?: 1) }
+    var showWeekdayMenu by remember { mutableStateOf(false) }
+    var showMonthDayMenu by remember { mutableStateOf(false) }
+    val weekdays = remember {
+        val names = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
+        (Calendar.SUNDAY..Calendar.SATURDAY).map { it to names[it] }
+    }
+    val recurrenceTimeLabel = remember(recurrenceTimeMinutes, context) {
+        val time = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, recurrenceTimeMinutes / 60)
+            set(Calendar.MINUTE, recurrenceTimeMinutes % 60)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
+        android.text.format.DateFormat.getTimeFormat(context).format(time)
+    }
 
     // Location permissions: geofences only fire while the app is closed with "Allow all the time"
     val isInspection = LocalInspectionMode.current
@@ -398,6 +442,153 @@ fun ReminderConfigDialog(
                         )
                     )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Autorenew,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.recurrence_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.recurrence_description),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = enableRecurrence,
+                        onCheckedChange = { enableRecurrence = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                if (enableRecurrence) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ChecklistRecurrence.values().forEach { frequency ->
+                            FilterChip(
+                                selected = selectedRecurrence == frequency,
+                                onClick = { selectedRecurrence = frequency },
+                                label = {
+                                    Text(
+                                        when (frequency) {
+                                            ChecklistRecurrence.DAILY -> stringResource(R.string.recurrence_daily)
+                                            ChecklistRecurrence.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                                            ChecklistRecurrence.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    if (selectedRecurrence == ChecklistRecurrence.WEEKLY) {
+                        Box {
+                            OutlinedButton(onClick = { showWeekdayMenu = true }) {
+                                Text(
+                                    stringResource(
+                                        R.string.recurrence_weekday,
+                                        weekdays.first { it.first == recurrenceDayOfWeek }.second
+                                    )
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showWeekdayMenu,
+                                onDismissRequest = { showWeekdayMenu = false }
+                            ) {
+                                weekdays.forEach { (day, label) ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            recurrenceDayOfWeek = day
+                                            showWeekdayMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    } else if (selectedRecurrence == ChecklistRecurrence.MONTHLY) {
+                        Box {
+                            OutlinedButton(onClick = { showMonthDayMenu = true }) {
+                                Text(stringResource(R.string.recurrence_month_day, recurrenceDayOfMonth))
+                            }
+                            DropdownMenu(
+                                modifier = Modifier
+                                    .heightIn(max = 320.dp)
+                                    .statusBarsPadding()
+                                    .navigationBarsPadding(),
+                                expanded = showMonthDayMenu,
+                                onDismissRequest = { showMonthDayMenu = false }
+                            ) {
+                                (1..31).forEach { day ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.recurrence_month_day, day)) },
+                                        onClick = {
+                                            recurrenceDayOfMonth = day
+                                            showMonthDayMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = stringResource(R.string.recurrence_month_end_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            val hour = recurrenceTimeMinutes / 60
+                            val minute = recurrenceTimeMinutes % 60
+                            TimePickerDialog(
+                                context,
+                                { _, selectedHour, selectedMinute ->
+                                    recurrenceTimeMinutes = selectedHour * 60 + selectedMinute
+                                },
+                                hour,
+                                minute,
+                                android.text.format.DateFormat.is24HourFormat(context)
+                            ).show()
+                        }
+                    ) {
+                        Icon(Icons.Default.Alarm, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            stringResource(
+                                R.string.recurrence_reset_time,
+                                recurrenceTimeLabel
+                            )
+                        )
+                    }
+                }
             }
         }
         val confirmButton: @Composable () -> Unit = {
@@ -409,7 +600,17 @@ fun ReminderConfigDialog(
                     val radius = if (enableGeofence) radiusText.toFloatOrNull() ?: 200f else 200f
                     val name = if (enableGeofence) locationName.trim() else null
 
-                    onSaveReminders(finalReminderTime, lat, lng, radius, name)
+                    onSaveReminders(
+                        finalReminderTime,
+                        lat,
+                        lng,
+                        radius,
+                        name,
+                        if (enableRecurrence) selectedRecurrence else null,
+                        recurrenceTimeMinutes,
+                        recurrenceDayOfWeek,
+                        recurrenceDayOfMonth
+                    )
                     onDismiss()
                 },
                 shape = RoundedCornerShape(10.dp),
@@ -513,10 +714,14 @@ private fun ReminderConfigDialogPreview() {
                 reminderTime = System.currentTimeMillis() + 3600000L,
                 geofenceLat = 47.3769,
                 geofenceLng = 8.5417,
-                geofenceName = "Zurich Airport"
+                geofenceName = "Zurich Airport",
+                recurrenceFrequency = ChecklistRecurrence.WEEKLY.name,
+                recurrenceTimeMinutes = 9 * 60,
+                recurrenceDayOfWeek = Calendar.MONDAY,
+                recurrenceDayOfMonth = 1
             ),
             onDismiss = {},
-            onSaveReminders = { _, _, _, _, _ -> }
+            onSaveReminders = { _, _, _, _, _, _, _, _, _ -> }
         )
     }
 }

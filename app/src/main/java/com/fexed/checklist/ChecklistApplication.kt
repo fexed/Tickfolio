@@ -4,6 +4,7 @@ import android.app.Application
 import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
+import com.fexed.checklist.data.recurrence.RecurringChecklistScheduler
 import com.fexed.checklist.data.repository.ChecklistRepository
 import com.fexed.checklist.util.SampleDataProvider
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +30,7 @@ class ChecklistApplication : Application() {
     @OptIn(FlowPreview::class)
     override fun onCreate() {
         super.onCreate()
+        RecurringChecklistScheduler.ensureScheduled(this)
         applicationScope.launch {
             database.invalidationTracker
                 .createFlow("checklists", "checklist_items")

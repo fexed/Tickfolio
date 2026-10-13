@@ -188,4 +188,13 @@
     <string name="geofence_bg_permission_text">To notify you when you arrive near this location even when the app is closed, select “%1$s” on the next screen.</string>
     <string name="geofence_bg_permission_option_fallback">Allow all the time</string>
     <string name="geofence_bg_permission_continue">Continue</string>
+    <string name="recurrence_title">Recurring reset</string>
+    <string name="recurrence_description">Automatically uncheck every item</string>
+    <string name="recurrence_daily">Daily</string>
+    <string name="recurrence_weekly">Weekly</string>
+    <string name="recurrence_monthly">Monthly</string>
+    <string name="recurrence_weekday">On %1$s</string>
+    <string name="recurrence_month_day">Day %1$d</string>
+    <string name="recurrence_reset_time">Reset time: %1$s</string>
+    <string name="recurrence_month_end_note">In shorter months, the reset happens on the last day.</string>
 </resources>

@@ -40,6 +40,15 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklists WHERE geofenceLat IS NOT NULL AND geofenceLng IS NOT NULL")
     suspend fun getChecklistsWithGeofence(): List<Checklist>
 
+    @Query(
+        """SELECT * FROM checklists
+            WHERE recurrenceFrequency IS NOT NULL
+            AND recurrenceTimeMinutes IS NOT NULL
+            AND recurrenceNextAt IS NOT NULL
+            AND recurrenceNextAt <= :now"""
+    )
+    suspend fun getDueRecurringChecklists(now: Long): List<Checklist>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChecklist(checklist: Checklist): Long
 
@@ -85,6 +94,19 @@ interface ChecklistDao {
 
     @Query("UPDATE checklist_items SET isCompleted = 0, completedChecks = 0 WHERE checklistId = :checklistId")
     suspend fun resetAllItems(checklistId: Long): Int
+
+    @Transaction
+    suspend fun resetRecurringChecklist(checklistId: Long, expectedNextAt: Long, nextAt: Long): Boolean {
+        if (advanceRecurrence(checklistId, expectedNextAt, nextAt) != 1) return false
+        resetAllItems(checklistId)
+        return true
+    }
+
+    @Query(
+        """UPDATE checklists SET recurrenceNextAt = :nextAt
+            WHERE id = :checklistId AND recurrenceNextAt = :expectedNextAt"""
+    )
+    suspend fun advanceRecurrence(checklistId: Long, expectedNextAt: Long, nextAt: Long): Int
 
     @Query("UPDATE checklist_items SET isCompleted = 1, completedChecks = requiredChecks WHERE checklistId = :checklistId")
     suspend fun completeAllItems(checklistId: Long): Int

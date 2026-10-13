@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fexed.checklist.data.local.ChecklistDao
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
@@ -114,18 +115,24 @@ class OverviewViewModel(
         geofenceLat: Double?,
         geofenceLng: Double?,
         geofenceRadius: Float,
-        geofenceName: String?
+        geofenceName: String?,
+        recurrence: ChecklistRecurrence?,
+        recurrenceTimeMinutes: Int,
+        recurrenceDayOfWeek: Int,
+        recurrenceDayOfMonth: Int
     ) {
         viewModelScope.launch {
-            val existing = repository.getChecklistById(checklistId) ?: return@launch
-            repository.updateChecklist(
-                existing.copy(
-                    reminderTime = reminderTime,
-                    geofenceLat = geofenceLat,
-                    geofenceLng = geofenceLng,
-                    geofenceRadius = geofenceRadius,
-                    geofenceName = geofenceName
-                )
+            repository.updateChecklistReminders(
+                checklistId = checklistId,
+                reminderTime = reminderTime,
+                geofenceLat = geofenceLat,
+                geofenceLng = geofenceLng,
+                geofenceRadius = geofenceRadius,
+                geofenceName = geofenceName,
+                recurrence = recurrence,
+                recurrenceTimeMinutes = recurrenceTimeMinutes,
+                recurrenceDayOfWeek = recurrenceDayOfWeek,
+                recurrenceDayOfMonth = recurrenceDayOfMonth
             )
         }
     }

@@ -11,7 +11,7 @@ import com.fexed.checklist.data.model.ChecklistItem
 
 @Database(
     entities = [Checklist::class, ChecklistItem::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class ChecklistDatabase : RoomDatabase() {
@@ -27,6 +27,16 @@ abstract class ChecklistDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE checklists ADD COLUMN recurrenceFrequency TEXT")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN recurrenceTimeMinutes INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN recurrenceDayOfWeek INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN recurrenceDayOfMonth INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN recurrenceNextAt INTEGER")
+            }
+        }
+
         @Volatile
         private var INSTANCE: ChecklistDatabase? = null
 
@@ -37,7 +47,7 @@ abstract class ChecklistDatabase : RoomDatabase() {
                     ChecklistDatabase::class.java,
                     "checklist_database"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

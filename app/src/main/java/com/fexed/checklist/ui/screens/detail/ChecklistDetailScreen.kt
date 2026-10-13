@@ -664,7 +664,8 @@ fun ChecklistDetailScreen(
         ReminderConfigDialog(
             checklist = checklist,
             onDismiss = { showReminderDialog = false },
-            onSaveReminders = { reminderTime, geofenceLat, geofenceLng, geofenceRadius, geofenceName ->
+            onSaveReminders = { reminderTime, geofenceLat, geofenceLng, geofenceRadius, geofenceName,
+                                recurrence, recurrenceTimeMinutes, recurrenceDayOfWeek, recurrenceDayOfMonth ->
                 // Update Alarm
                 if (reminderTime != null) {
                     ChecklistAlarmReceiver.scheduleAlarm(
@@ -695,7 +696,11 @@ fun ChecklistDetailScreen(
                     geofenceLat = geofenceLat,
                     geofenceLng = geofenceLng,
                     geofenceRadius = geofenceRadius,
-                    geofenceName = geofenceName
+                    geofenceName = geofenceName,
+                    recurrence = recurrence,
+                    recurrenceTimeMinutes = recurrenceTimeMinutes,
+                    recurrenceDayOfWeek = recurrenceDayOfWeek,
+                    recurrenceDayOfMonth = recurrenceDayOfMonth
                 )
             }
         )

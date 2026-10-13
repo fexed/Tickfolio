@@ -188,4 +188,13 @@
     <string name="geofence_bg_permission_text">Per avvisarti quando arrivi vicino a questa posizione anche ad app chiusa, seleziona “%1$s” nella schermata successiva.</string>
     <string name="geofence_bg_permission_option_fallback">Consenti sempre</string>
     <string name="geofence_bg_permission_continue">Continua</string>
+    <string name="recurrence_title">Ripristino ricorrente</string>
+    <string name="recurrence_description">Deseleziona automaticamente tutti gli elementi</string>
+    <string name="recurrence_daily">Ogni giorno</string>
+    <string name="recurrence_weekly">Ogni settimana</string>
+    <string name="recurrence_monthly">Ogni mese</string>
+    <string name="recurrence_weekday">Il %1$s</string>
+    <string name="recurrence_month_day">Giorno %1$d</string>
+    <string name="recurrence_reset_time">Orario di ripristino: %1$s</string>
+    <string name="recurrence_month_end_note">Nei mesi più brevi, il ripristino avviene l’ultimo giorno.</string>
 </resources>

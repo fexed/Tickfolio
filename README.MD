@@ -14,6 +14,8 @@ carry the details that make it useful.
 - Search checklists and filter checklist items by text, tag, or completion.
 - Long-press a checklist in the overview to select multiple checklists for deletion.
 - Set date-and-time reminders or location-proximity reminders.
+- Automatically reset checklist items daily, weekly, or monthly, with a chosen
+  reset time and (for weekly/monthly schedules) weekday or day of the month.
 - Choose a geofence location on an interactive map, search for a place, or use
   the device's current location.
 - Add a home-screen widget for one checklist with tappable completion controls,
@@ -73,8 +75,10 @@ flowchart TD
   notifications, including when the app is closed (this requires the "Allow all
   the time" location permission, which the reminder dialog requests).
   `GeofenceRestoreReceiver` re-registers geofences after reboot or app update,
-  and they are also restored on app launch. Item images are copied to
-  app-private storage.
+  and they are also restored on app launch. WorkManager periodically processes
+  due recurring resets, including schedules missed while the device was off;
+  checklist reset and next-run updates are committed atomically. Item images
+  are copied to app-private storage.
 - **Map picker:** The location picker draws OpenStreetMap tiles and supports
   map gestures, place search, and selecting a location.
 - **Home-screen widgets:** Glance renders a configurable single-checklist
@@ -86,9 +90,8 @@ widget prompts you to choose which saved checklist to show; tap a checklist
 item to toggle its completion, or tap the header to open it in the app. The
 all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
-The Room database currently uses destructive fallback migration. During this
-MVP stage, a database schema upgrade without a migration can erase existing
-local checklist data.
+The Room database has preserving migrations for schema versions 1 through 3.
+Destructive fallback migration remains enabled for unsupported schema upgrades.
 
 ## Nightly releases
 

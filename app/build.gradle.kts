@@ -74,6 +74,9 @@ dependencies {
     // Home screen widgets
     implementation(libs.glance.appwidget)
 
+    // Persistent recurring checklist resets
+    implementation(libs.androidx.work.runtime)
+
     // Play Services Location (Geofencing)
     implementation(libs.play.services.location)
 

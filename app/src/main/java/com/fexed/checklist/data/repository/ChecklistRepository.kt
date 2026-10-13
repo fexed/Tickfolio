@@ -3,11 +3,14 @@ package com.fexed.checklist.data.repository
 import com.fexed.checklist.data.local.ChecklistDao
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
+import com.fexed.checklist.util.RecurrenceSchedule
+import java.util.Calendar
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -72,6 +75,49 @@ class ChecklistRepository(
 
     suspend fun updateChecklist(checklist: Checklist) {
         checklistDao.updateChecklist(checklist)
+    }
+
+    suspend fun updateChecklistReminders(
+        checklistId: Long,
+        reminderTime: Long?,
+        geofenceLat: Double?,
+        geofenceLng: Double?,
+        geofenceRadius: Float,
+        geofenceName: String?,
+        recurrence: ChecklistRecurrence?,
+        recurrenceTimeMinutes: Int,
+        recurrenceDayOfWeek: Int,
+        recurrenceDayOfMonth: Int
+    ) {
+        val checklist = checklistDao.getChecklistById(checklistId) ?: return
+        val now = System.currentTimeMillis()
+        val normalizedTime = recurrenceTimeMinutes.coerceIn(0, 23 * 60 + 59)
+        val normalizedDayOfWeek = recurrenceDayOfWeek.coerceIn(Calendar.SUNDAY, Calendar.SATURDAY)
+        val normalizedDayOfMonth = recurrenceDayOfMonth.coerceIn(1, 31)
+        val nextRecurrenceAt = recurrence?.let {
+            RecurrenceSchedule.firstOccurrenceAfter(
+                now = now,
+                frequency = it,
+                timeMinutes = normalizedTime,
+                dayOfWeek = normalizedDayOfWeek,
+                dayOfMonth = normalizedDayOfMonth
+            )
+        }
+
+        checklistDao.updateChecklist(
+            checklist.copy(
+                reminderTime = reminderTime,
+                geofenceLat = geofenceLat,
+                geofenceLng = geofenceLng,
+                geofenceRadius = geofenceRadius,
+                geofenceName = geofenceName,
+                recurrenceFrequency = recurrence?.name,
+                recurrenceTimeMinutes = recurrence?.let { normalizedTime },
+                recurrenceDayOfWeek = recurrence?.let { normalizedDayOfWeek },
+                recurrenceDayOfMonth = recurrence?.let { normalizedDayOfMonth },
+                recurrenceNextAt = nextRecurrenceAt
+            )
+        )
     }
 
     suspend fun deleteChecklist(id: Long) {

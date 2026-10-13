@@ -19,5 +19,10 @@ data class Checklist(
     val geofenceLat: Double? = null,
     val geofenceLng: Double? = null,
     val geofenceRadius: Float = 200f,
-    val geofenceName: String? = null
+    val geofenceName: String? = null,
+    val recurrenceFrequency: String? = null,
+    val recurrenceTimeMinutes: Int? = null,
+    val recurrenceDayOfWeek: Int? = null,
+    val recurrenceDayOfMonth: Int? = null,
+    val recurrenceNextAt: Long? = null
 )

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.repository.ChecklistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -140,18 +141,24 @@ class ChecklistDetailViewModel(
         geofenceLat: Double?,
         geofenceLng: Double?,
         geofenceRadius: Float,
-        geofenceName: String?
+        geofenceName: String?,
+        recurrence: ChecklistRecurrence?,
+        recurrenceTimeMinutes: Int,
+        recurrenceDayOfWeek: Int,
+        recurrenceDayOfMonth: Int
     ) {
         viewModelScope.launch {
-            val current = uiState.value.checklistWithItems?.checklist ?: return@launch
-            repository.updateChecklist(
-                current.copy(
-                    reminderTime = reminderTime,
-                    geofenceLat = geofenceLat,
-                    geofenceLng = geofenceLng,
-                    geofenceRadius = geofenceRadius,
-                    geofenceName = geofenceName
-                )
+            repository.updateChecklistReminders(
+                checklistId = checklistId,
+                reminderTime = reminderTime,
+                geofenceLat = geofenceLat,
+                geofenceLng = geofenceLng,
+                geofenceRadius = geofenceRadius,
+                geofenceName = geofenceName,
+                recurrence = recurrence,
+                recurrenceTimeMinutes = recurrenceTimeMinutes,
+                recurrenceDayOfWeek = recurrenceDayOfWeek,
+                recurrenceDayOfMonth = recurrenceDayOfMonth
             )
         }
     }
