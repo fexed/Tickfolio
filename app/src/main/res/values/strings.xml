@@ -168,4 +168,10 @@
     <string name="channel_geofence_desc">Proximity alerts when arriving near a checklist location</string>
     <string name="geofence_notif_title">📍 Nearby Checklist Location</string>
     <string name="geofence_notif_text">You are near the location set for this checklist. Tap to open and review items!</string>
+    <string name="geofence_permission_warning">Location alerts need location access set to “Allow all the time” to work while the app is closed.</string>
+    <string name="geofence_permission_grant">Grant location access</string>
+    <string name="geofence_bg_permission_title">Allow background location</string>
+    <string name="geofence_bg_permission_text">To notify you when you arrive near this location even when the app is closed, select “%1$s” on the next screen.</string>
+    <string name="geofence_bg_permission_option_fallback">Allow all the time</string>
+    <string name="geofence_bg_permission_continue">Continue</string>
 </resources>

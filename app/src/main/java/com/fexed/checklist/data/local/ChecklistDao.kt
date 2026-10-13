@@ -37,6 +37,9 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklists ORDER BY lastOpenedAt DESC LIMIT 1")
     suspend fun getLatestOpenedChecklist(): Checklist?
 
+    @Query("SELECT * FROM checklists WHERE geofenceLat IS NOT NULL AND geofenceLng IS NOT NULL")
+    suspend fun getChecklistsWithGeofence(): List<Checklist>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertChecklist(checklist: Checklist): Long
 
