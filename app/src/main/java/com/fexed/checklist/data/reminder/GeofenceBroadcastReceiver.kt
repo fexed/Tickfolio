@@ -9,11 +9,16 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import com.fexed.checklist.ChecklistApplication
 import com.fexed.checklist.MainActivity
 import com.fexed.checklist.R
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
 
@@ -30,21 +35,52 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             return
         }
 
+        val app = context.applicationContext as ChecklistApplication
+
         if (geofencingEvent.hasError()) {
-            val errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.errorCode)
-            Log.e(TAG, "Geofencing error: $errorMessage")
+            val errorCode = geofencingEvent.errorCode
+            Log.e(TAG, "Geofencing error: ${GeofenceStatusCodes.getStatusCodeString(errorCode)}")
+            // Location was turned off: all geofences were dropped, re-register them.
+            if (errorCode == GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE) {
+                runAsync {
+                    app.geofenceManager.restoreGeofences(app.repository.getChecklistsWithGeofence())
+                }
+            }
             return
         }
 
         val geofenceTransition = geofencingEvent.geofenceTransition
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-            geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL
-        ) {
-            val triggeringGeofences = geofencingEvent.triggeringGeofences ?: return
-            for (geofence in triggeringGeofences) {
-                val requestId = geofence.requestId // formatted as "checklist_{id}"
-                val checklistId = requestId.removePrefix("checklist_").toLongOrNull() ?: continue
+        if (geofenceTransition != Geofence.GEOFENCE_TRANSITION_ENTER &&
+            geofenceTransition != Geofence.GEOFENCE_TRANSITION_DWELL
+        ) return
+
+        val checklistIds = geofencingEvent.triggeringGeofences.orEmpty().mapNotNull {
+            it.requestId.removePrefix("checklist_").toLongOrNull()
+        }
+        if (checklistIds.isEmpty()) return
+
+        runAsync {
+            for (checklistId in checklistIds) {
+                val checklist = app.repository.getChecklistById(checklistId)
+                if (checklist?.geofenceLat == null || checklist.geofenceLng == null) {
+                    // Stale geofence for a deleted checklist or a removed location reminder.
+                    app.geofenceManager.removeGeofence(checklistId)
+                    continue
+                }
                 sendProximityNotification(context, checklistId)
+            }
+        }
+    }
+
+    private fun runAsync(block: suspend () -> Unit) {
+        val pendingResult = goAsync()
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                block()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error handling geofence event", e)
+            } finally {
+                pendingResult.finish()
             }
         }
     }

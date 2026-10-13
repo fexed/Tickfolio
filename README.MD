@@ -66,7 +66,11 @@ flowchart TD
 - **Reminders and photos:** `ChecklistAlarmReceiver` handles scheduled
   notifications. `GeofenceManager` registers location boundaries with Google
   Play services and `GeofenceBroadcastReceiver` displays proximity
-  notifications. Item images are copied to app-private storage.
+  notifications, including when the app is closed (this requires the "Allow all
+  the time" location permission, which the reminder dialog requests).
+  `GeofenceRestoreReceiver` re-registers geofences after reboot or app update,
+  and they are also restored on app launch. Item images are copied to
+  app-private storage.
 - **Map picker:** The location picker draws OpenStreetMap tiles and supports
   map gestures, place search, and selecting a location.
 - **Home-screen widgets:** Glance renders a configurable single-checklist

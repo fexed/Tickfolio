@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
@@ -75,10 +76,20 @@
             android:name=".data.reminder.ChecklistAlarmReceiver"
             android:exported="false" />
 
+        <!-- Invoked through our own explicit PendingIntent, so it does not need to be exported -->
         <receiver
             android:name=".data.reminder.GeofenceBroadcastReceiver"
-            android:exported="true"
-            android:permission="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+            android:exported="false" />
+
+        <!-- Geofences are dropped by the system on reboot and app update: re-register them -->
+        <receiver
+            android:name=".data.reminder.GeofenceRestoreReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
 
         <!-- FileProvider for capturing camera pictures securely -->
         <provider

@@ -31,6 +31,10 @@ class ChecklistRepository(
         return checklistDao.getLatestOpenedChecklist()
     }
 
+    suspend fun getChecklistsWithGeofence(): List<Checklist> {
+        return checklistDao.getChecklistsWithGeofence()
+    }
+
     suspend fun markChecklistOpened(id: Long) {
         val now = System.currentTimeMillis()
         checklistDao.updateLastOpened(id, now)

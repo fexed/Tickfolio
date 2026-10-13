@@ -1,7 +1,11 @@
 package com.fexed.checklist.ui.components
 
+import android.Manifest
 import android.app.DatePickerDialog
+import android.os.Build
 import android.app.TimePickerDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,6 +55,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.Checklist
+import com.fexed.checklist.data.reminder.GeofenceManager
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -87,6 +92,45 @@ fun ReminderConfigDialog(
     var longitudeText by remember { mutableStateOf(checklist.geofenceLng?.toString() ?: "") }
     var radiusText by remember { mutableStateOf(checklist.geofenceRadius.toInt().toString()) }
     var showMapPicker by remember { mutableStateOf(false) }
+
+    // Location permissions: geofences only fire while the app is closed with "Allow all the time"
+    val isInspection = LocalInspectionMode.current
+    var permissionRefresh by remember { mutableStateOf(0) }
+    val hasFineLocation = remember(permissionRefresh) {
+        isInspection || GeofenceManager.hasFineLocationPermission(context)
+    }
+    val hasBackgroundLocation = remember(permissionRefresh) {
+        isInspection || GeofenceManager.hasBackgroundLocationPermission(context)
+    }
+    var showBackgroundRationale by remember { mutableStateOf(false) }
+
+    val backgroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { permissionRefresh++ }
+
+    val foregroundLocationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        permissionRefresh++
+        if (result[Manifest.permission.ACCESS_FINE_LOCATION] == true &&
+            !GeofenceManager.hasBackgroundLocationPermission(context)
+        ) {
+            showBackgroundRationale = true
+        }
+    }
+
+    fun requestGeofencePermissions() {
+        if (!GeofenceManager.hasFineLocationPermission(context)) {
+            foregroundLocationLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        } else if (!GeofenceManager.hasBackgroundLocationPermission(context)) {
+            showBackgroundRationale = true
+        }
+    }
 
     val dateFormat = remember { SimpleDateFormat("EEE, dd MMM yyyy - HH:mm", Locale.getDefault()) }
 
@@ -238,7 +282,10 @@ fun ReminderConfigDialog(
 
                     Switch(
                         checked = enableGeofence,
-                        onCheckedChange = { enableGeofence = it },
+                        onCheckedChange = {
+                            enableGeofence = it
+                            if (it) requestGeofencePermissions()
+                        },
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                             checkedTrackColor = MaterialTheme.colorScheme.primary
@@ -247,6 +294,18 @@ fun ReminderConfigDialog(
                 }
 
                 if (enableGeofence) {
+                    if (!hasFineLocation || !hasBackgroundLocation) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = stringResource(R.string.geofence_permission_warning),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        TextButton(onClick = { requestGeofencePermissions() }) {
+                            Text(stringResource(R.string.geofence_permission_grant))
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(10.dp))
 
                     // Map selection launcher button
@@ -386,6 +445,41 @@ fun ReminderConfigDialog(
                 containerColor = MaterialTheme.colorScheme.surface
             )
         }
+    }
+
+    if (showBackgroundRationale && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundRationale = false },
+            icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
+            title = { Text(stringResource(R.string.geofence_bg_permission_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.geofence_bg_permission_text,
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            context.packageManager.backgroundPermissionOptionLabel
+                        } else {
+                            stringResource(R.string.geofence_bg_permission_option_fallback)
+                        }
+                    )
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showBackgroundRationale = false
+                    backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                }) {
+                    Text(stringResource(R.string.geofence_bg_permission_continue))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackgroundRationale = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     }
 
     // Interactive Map Picker Dialog
