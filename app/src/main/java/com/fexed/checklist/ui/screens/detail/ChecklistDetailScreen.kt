@@ -259,7 +259,11 @@ fun ChecklistDetailScreen(
                                         }
                                         sb.append("\n")
                                         cwi.items.forEach { item ->
-                                            val box = if (item.isCompleted) "[x]" else "[ ]"
+                                            val box = when {
+                                                item.isCompleted -> "[x]"
+                                                item.completedChecks > 0 -> "[${item.completedChecks}/${item.requiredChecks}]"
+                                                else -> "[ ]"
+                                            }
                                             val tagPart = if (item.tag.isNotBlank()) " (#${item.tag})" else ""
                                             sb.append("$box ${item.title}$tagPart\n")
                                             if (item.description.isNotBlank()) {
@@ -555,8 +559,8 @@ fun ChecklistDetailScreen(
                         ) { item ->
                             ChecklistItemCard(
                                 item = item,
-                                onToggleCompleted = { completed ->
-                                    viewModel.toggleItemCompleted(item.id, completed)
+                                onProgressChange = { completedChecks ->
+                                    viewModel.setItemCheckCount(item.id, completedChecks)
                                 },
                                 onEdit = { editingItem = item },
                                 onDelete = { viewModel.deleteItem(item.id) },
@@ -578,8 +582,8 @@ fun ChecklistDetailScreen(
             initialItem = null,
             availableTags = checklistWithItems?.tags ?: emptyList(),
             onDismiss = { showAddItemSheet = false },
-            onConfirm = { title, description, tag, imageUri ->
-                viewModel.addItem(title, description, tag, imageUri)
+            onConfirm = { title, description, tag, imageUri, requiredChecks ->
+                viewModel.addItem(title, description, tag, imageUri, requiredChecks)
                 coroutineScope.launch {
                     bottomSheetState.hide()
                     showAddItemSheet = false
@@ -595,8 +599,8 @@ fun ChecklistDetailScreen(
             initialItem = item,
             availableTags = checklistWithItems?.tags ?: emptyList(),
             onDismiss = { editingItem = null },
-            onConfirm = { title, description, tag, imageUri ->
-                viewModel.updateItem(item, title, description, tag, imageUri)
+            onConfirm = { title, description, tag, imageUri, requiredChecks ->
+                viewModel.updateItem(item, title, description, tag, imageUri, requiredChecks)
                 coroutineScope.launch {
                     bottomSheetState.hide()
                     editingItem = null

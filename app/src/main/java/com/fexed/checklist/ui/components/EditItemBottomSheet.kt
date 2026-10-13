@@ -55,10 +55,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.fexed.checklist.R
@@ -75,7 +77,7 @@ fun EditItemBottomSheet(
     initialItem: ChecklistItem? = null,
     availableTags: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String, tag: String, imageUri: String?) -> Unit
+    onConfirm: (title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) -> Unit
 ) {
     val context = LocalContext.current
     var title by remember { mutableStateOf(initialItem?.title ?: "") }
@@ -83,6 +85,8 @@ fun EditItemBottomSheet(
     var tag by remember { mutableStateOf(initialItem?.tag ?: "") }
     var imageUri by remember { mutableStateOf(initialItem?.imageUri) }
     var titleError by remember { mutableStateOf(false) }
+    var requiredChecks by remember { mutableStateOf(initialItem?.requiredChecks?.toString() ?: "1") }
+    var requiredChecksError by remember { mutableStateOf(false) }
 
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
 
@@ -145,6 +149,29 @@ fun EditItemBottomSheet(
                 isError = titleError,
                 supportingText = if (titleError) {
                     { Text(stringResource(R.string.error_title_required)) }
+                } else null,
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = requiredChecks,
+                onValueChange = {
+                    requiredChecks = it.filter(Char::isDigit)
+                    requiredChecksError = false
+                },
+                label = { Text(stringResource(R.string.label_required_checks)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = requiredChecksError,
+                supportingText = if (requiredChecksError) {
+                    { Text(stringResource(R.string.error_required_checks)) }
                 } else null,
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -346,10 +373,11 @@ fun EditItemBottomSheet(
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = {
-                        if (title.isBlank()) {
-                            titleError = true
-                        } else {
-                            onConfirm(title.trim(), description.trim(), tag.trim(), imageUri)
+                        val checkCount = requiredChecks.toIntOrNull()
+                        titleError = title.isBlank()
+                        requiredChecksError = checkCount == null || checkCount < 1
+                        if (!titleError && checkCount != null && checkCount > 0) {
+                            onConfirm(title.trim(), description.trim(), tag.trim(), imageUri, checkCount)
                         }
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -401,7 +429,7 @@ private fun EditItemBottomSheetPreview() {
             ),
             availableTags = listOf("Essentials", "Documents", "Clothing"),
             onDismiss = {},
-            onConfirm = { _, _, _, _ -> }
+            onConfirm = { _, _, _, _, _ -> }
         )
     }
 }

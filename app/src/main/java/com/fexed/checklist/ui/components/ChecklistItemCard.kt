@@ -8,25 +8,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -42,8 +42,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,17 +58,27 @@ import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
 import java.io.File
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChecklistItemCard(
     item: ChecklistItem,
-    onToggleCompleted: (Boolean) -> Unit,
+    onProgressChange: (Int) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onViewImage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    val checkControlDescription = stringResource(
+        R.string.item_check_control_desc,
+        item.title,
+        item.completedChecks,
+        item.requiredChecks
+    )
+    val checkControlState = stringResource(
+        R.string.item_checks_progress,
+        item.completedChecks,
+        item.requiredChecks
+    )
 
     val cardColor by animateColorAsState(
         targetValue = if (item.isCompleted) {
@@ -94,22 +108,63 @@ fun ChecklistItemCard(
                 .padding(horizontal = 8.dp, vertical = 10.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Checkbox
-            Checkbox(
-                checked = item.isCompleted,
-                onCheckedChange = { onToggleCompleted(it) },
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary,
-                    uncheckedColor = MaterialTheme.colorScheme.outline
-                ),
-                modifier = Modifier.padding(top = 2.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .semantics {
+                        contentDescription = checkControlDescription
+                        role = Role.Checkbox
+                        stateDescription = checkControlState
+                    }
+                    .clickable {
+                        onProgressChange(if (item.isCompleted) 0 else item.completedChecks + 1)
+                    },
+                contentAlignment = Alignment.Center
+            ) {
+                if (item.isCompleted) {
+                    Box(
+                        modifier = Modifier
+                            .size(28.dp)
+                            .background(MaterialTheme.colorScheme.primary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                } else {
+                    CircularProgressIndicator(
+                        progress = {
+                            item.completedChecks.coerceIn(0, item.requiredChecks).toFloat() /
+                                item.requiredChecks.coerceAtLeast(1)
+                        },
+                        modifier = Modifier.size(28.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        strokeWidth = 2.5.dp
+                    )
+                    if (item.completedChecks > 0) {
+                        Text(
+                            text = item.completedChecks.toString(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            }
 
             // Content: Title, Description, Tags
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable { onToggleCompleted(!item.isCompleted) }
+                    .clickable {
+                        onProgressChange(if (item.isCompleted) 0 else item.completedChecks + 1)
+                    }
                     .padding(vertical = 4.dp, horizontal = 4.dp)
             ) {
                 Text(
@@ -137,6 +192,45 @@ fun ChecklistItemCard(
                 if (item.tag.isNotBlank()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     TagChip(tag = item.tag)
+                }
+
+                if (item.requiredChecks > 1) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        IconButton(
+                            onClick = { onProgressChange(item.completedChecks - 1) },
+                            enabled = item.completedChecks > 0,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Remove,
+                                contentDescription = stringResource(R.string.decrease_item_checks),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Text(
+                            text = stringResource(
+                                R.string.item_checks_progress,
+                                item.completedChecks,
+                                item.requiredChecks
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        IconButton(
+                            onClick = { onProgressChange(item.completedChecks + 1) },
+                            enabled = item.completedChecks < item.requiredChecks,
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(R.string.increase_item_checks),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -234,7 +328,7 @@ private fun ChecklistItemCardPreview() {
                 tag = "Engine",
                 isCompleted = false
             ),
-            onToggleCompleted = {},
+            onProgressChange = {},
             onEdit = {},
             onDelete = {},
             onViewImage = {},
@@ -256,7 +350,7 @@ private fun ChecklistItemCardCompletedPreview() {
                 tag = "Documents",
                 isCompleted = true
             ),
-            onToggleCompleted = {},
+            onProgressChange = {},
             onEdit = {},
             onDelete = {},
             onViewImage = {},

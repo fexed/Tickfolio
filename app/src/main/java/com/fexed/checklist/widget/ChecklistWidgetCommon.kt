@@ -97,10 +97,10 @@ internal suspend fun loadAllChecklists(context: Context): List<ChecklistWithItem
 internal suspend fun toggleChecklistItem(
     context: Context,
     itemId: Long,
-    completed: Boolean
+    completedChecks: Int
 ) {
     val app = context.applicationContext as ChecklistApplication
-    app.database.checklistDao().setItemCompleted(itemId, completed)
+    app.database.checklistDao().setItemCheckCount(itemId, completedChecks)
     ChecklistWidgetUpdater.updateAll(context)
 }
 
