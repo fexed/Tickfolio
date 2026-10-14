@@ -1,6 +1,7 @@
 package com.fexed.checklist
 
 import android.app.Application
+import android.util.Log
 import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
@@ -8,7 +9,9 @@ import com.fexed.checklist.data.reminder.ItemDueDateScheduler
 import com.fexed.checklist.data.recurrence.RecurringChecklistScheduler
 import com.fexed.checklist.data.sync.DriveSyncScheduler
 import com.fexed.checklist.data.repository.ChecklistRepository
+import com.fexed.checklist.data.wear.WearSync
 import com.fexed.checklist.util.SampleDataProvider
+import com.fexed.checklist.widget.ChecklistWidgetUpdater
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -18,7 +21,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import com.fexed.checklist.widget.ChecklistWidgetUpdater
 
 class ChecklistApplication : Application() {
 
@@ -33,6 +35,15 @@ class ChecklistApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         RecurringChecklistScheduler.ensureScheduled(this)
+        publishWearSnapshot()
+        applicationScope.launch {
+            database.invalidationTracker
+                .createFlow("checklists", "checklist_items")
+                .debounce(1_000)
+                .collect {
+                    publishWearSnapshot()
+                }
+        }
         applicationScope.launch {
             ItemDueDateScheduler.reconcile(
                 this@ChecklistApplication,
@@ -89,6 +100,16 @@ class ChecklistApplication : Application() {
                 .collect {
                     ChecklistWidgetUpdater.updateAll(this@ChecklistApplication)
                 }
+        }
+    }
+
+    private fun publishWearSnapshot() {
+        applicationScope.launch {
+            try {
+                WearSync.publishChecklists(this@ChecklistApplication, database.checklistDao())
+            } catch (error: Exception) {
+                Log.e("TickfolioWearSync", "Unable to publish checklist snapshot to Wear OS", error)
+            }
         }
     }
 }

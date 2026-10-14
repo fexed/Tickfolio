@@ -37,6 +37,14 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".data.wear.WearDataListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+
         <activity
             android:name=".widget.SingleChecklistWidgetConfigActivity"
             android:exported="true"

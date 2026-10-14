@@ -162,6 +162,17 @@ interface ChecklistDao {
     @Query("UPDATE checklist_items SET completedChecks = CASE WHEN :completedChecks < 0 THEN 0 WHEN :completedChecks > requiredChecks THEN requiredChecks ELSE :completedChecks END, isCompleted = CASE WHEN :completedChecks >= requiredChecks THEN 1 ELSE 0 END, updatedAt = CASE WHEN :updatedAt > updatedAt THEN :updatedAt ELSE updatedAt + 1 END WHERE id = :id")
     suspend fun setItemCheckCount(id: Long, completedChecks: Int, updatedAt: Long): Int
 
+    @Query(
+        """UPDATE checklist_items SET
+            completedChecks = CASE WHEN :completedChecks < 0 THEN 0
+                WHEN :completedChecks > requiredChecks THEN requiredChecks
+                ELSE :completedChecks END,
+            isCompleted = CASE WHEN :completedChecks >= requiredChecks THEN 1 ELSE 0 END,
+            updatedAt = :updatedAt
+            WHERE syncId = :syncId AND :updatedAt > updatedAt"""
+    )
+    suspend fun applyWearProgress(syncId: String, completedChecks: Int, updatedAt: Long): Int
+
     @Query("UPDATE checklist_items SET isCompleted = 0, completedChecks = 0, updatedAt = CASE WHEN :updatedAt > updatedAt THEN :updatedAt ELSE updatedAt + 1 END WHERE checklistId = :checklistId")
     suspend fun resetAllItems(checklistId: Long, updatedAt: Long): Int
 

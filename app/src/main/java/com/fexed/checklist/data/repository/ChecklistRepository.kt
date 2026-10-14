@@ -199,6 +199,10 @@ class ChecklistRepository(
         checklistDao.setItemCheckCount(id, completedChecks, System.currentTimeMillis())
     }
 
+    suspend fun applyWearProgress(syncId: String, completedChecks: Int, updatedAt: Long): Boolean {
+        return checklistDao.applyWearProgress(syncId, completedChecks, updatedAt) == 1
+    }
+
     suspend fun resetAllItems(checklistId: Long) {
         checklistDao.resetAllItems(checklistId, System.currentTimeMillis())
     }

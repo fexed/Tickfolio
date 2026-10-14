@@ -25,6 +25,8 @@ carry the details that make it useful.
   the device's current location.
 - Add a home-screen widget for one checklist with tappable completion controls,
   or a separate scrollable widget for opening any saved checklist.
+- Browse checklists and update item progress from the Wear OS companion app,
+  including while offline; queued progress syncs with the phone when connected.
 - Choose whether the app opens to all checklists or the latest checklist, and
   select system, light paper, or dark parchment appearance.
 - On Android 13 and later, change the app language in system settings under
@@ -68,6 +70,10 @@ flowchart TD
     Images --> Files[(App-private image files)]
     Room --> Widgets[Home-screen widgets]
     Widgets --> Activity[MainActivity]
+    Wear[Wear OS companion] --> WearCache[(On-watch cache and update queue)]
+    Wear <--> DataLayer[Google Play services Wearable Data Layer]
+    DataLayer <--> App[Phone app]
+    App --> Room
 ```
 
 - **Application setup:** `ChecklistApplication` creates the Room database,
@@ -103,6 +109,13 @@ flowchart TD
 - **Home-screen widgets:** Glance renders a configurable single-checklist
   widget with direct item completion and an all-checklists widget. Room
   invalidations refresh both widgets when checklist data changes.
+- **Wear OS companion:** The separate `:wear` application module caches
+  checklist snapshots on the watch and lets users advance or reset item
+  completion counts. The watch cannot create or edit checklist content.
+  Progress updates are stored locally and sent as durable Wearable Data Items;
+  the phone applies only updates newer than its current item version and sends
+  refreshed snapshots back to the watch. Both APKs share the same application
+  ID and must use the same signing certificate for the Data Layer to connect.
 
 Add either widget from the launcher's widget picker. The single-checklist
 widget prompts you to choose which saved checklist to show; tap a checklist
