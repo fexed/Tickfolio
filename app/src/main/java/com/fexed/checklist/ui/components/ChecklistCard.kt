@@ -360,7 +360,9 @@ private fun ChecklistCardLightPreview() {
         val items = listOf(
             ChecklistItem(id = 1, checklistId = 1, title = "Kitchen stove", tag = "Kitchen", isCompleted = true),
             ChecklistItem(id = 2, checklistId = 1, title = "Dust shelves", tag = "Living", isCompleted = true),
-            ChecklistItem(id = 3, checklistId = 1, title = "Mop floors", tag = "General", isCompleted = false)
+            ChecklistItem(id = 3, checklistId = 1, title = "Mop floors", tag = "General", isCompleted = false),
+            ChecklistItem(id = 4, checklistId = 1, title = "Vacuum carpets", tag = "Groceries", isCompleted = false),
+            ChecklistItem(id = 5, checklistId = 1, title = "Water plants", tag = "Gardening", isCompleted = false)
         )
         ChecklistCard(
             checklistWithItems = ChecklistWithItems(checklist, items),
