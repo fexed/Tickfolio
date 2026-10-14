@@ -148,7 +148,8 @@ class ChecklistRepository(
                 isCompleted = false,
                 completedChecks = 0,
                 createdAt = System.currentTimeMillis(),
-                updatedAt = System.currentTimeMillis()
+                updatedAt = System.currentTimeMillis(),
+                dueNotificationSentAt = null
             )
         }
         checklistDao.insertItems(newItems)
@@ -162,7 +163,8 @@ class ChecklistRepository(
         description: String = "",
         tag: String = "",
         imageUri: String? = null,
-        requiredChecks: Int = 1
+        requiredChecks: Int = 1,
+        dueAt: Long? = null
     ): Long {
         val item = ChecklistItem(
             checklistId = checklistId,
@@ -173,7 +175,8 @@ class ChecklistRepository(
             isCompleted = false,
             requiredChecks = requiredChecks.coerceAtLeast(1),
             completedChecks = 0,
-            createdAt = System.currentTimeMillis()
+            createdAt = System.currentTimeMillis(),
+            dueAt = dueAt
         )
         return checklistDao.insertItem(item)
     }

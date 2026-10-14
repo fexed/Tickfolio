@@ -11,6 +11,9 @@ carry the details that make it useful.
 - Create and manage checklists with a title, description, and themed icon.
 - Add checklist items with descriptions, tags, completion state, and a photo
   from the camera or gallery.
+- Set an optional due date and time for each item and receive a notification
+  when it is due. Notifications are scheduled locally and only sent for
+  incomplete items; Android notification permission is requested when needed.
 - Search checklists and filter checklist items by text, tag, or completion.
 - Long-press a checklist in the overview to select multiple checklists for deletion.
 - Set date-and-time reminders or location-proximity reminders.
@@ -86,9 +89,12 @@ flowchart TD
   and they are also restored on app launch. WorkManager periodically processes
   due recurring resets, including schedules missed while the device was off;
   checklist reset and next-run updates are committed atomically. Item images
-  are copied to app-private storage. When enabled, WorkManager also syncs data
+  are copied to app-private storage. WorkManager schedules one-time due-date
+  notifications for incomplete items and restores them from the database on
+  app startup. When enabled, WorkManager also syncs data
   with Google Drive over a network connection after local edits and periodically.
-  A ZIP backup contains checklist and item data, deletion records, and photos.
+  A ZIP backup contains checklist and item data, due dates, deletion records,
+  and photos.
   Records are merged by stable sync ID, with the most recently edited version
   winning; deleted records are tracked to prevent older device copies from
   restoring them.
@@ -103,7 +109,7 @@ widget prompts you to choose which saved checklist to show; tap a checklist
 item to toggle its completion, or tap the header to open it in the app. The
 all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
-The Room database has preserving migrations for schema versions 1 through 4.
+The Room database has preserving migrations for schema versions 1 through 5.
 Destructive fallback migration remains enabled for unsupported schema upgrades.
 
 ## Google Drive backup setup

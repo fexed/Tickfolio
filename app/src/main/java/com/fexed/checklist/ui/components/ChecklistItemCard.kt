@@ -1,5 +1,6 @@
 package com.fexed.checklist.ui.components
 
+import android.text.format.DateUtils
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
@@ -47,6 +49,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -67,6 +70,7 @@ fun ChecklistItemCard(
     onViewImage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var menuExpanded by remember { mutableStateOf(false) }
     val checkControlDescription = stringResource(
         R.string.item_check_control_desc,
@@ -187,6 +191,48 @@ fun ChecklistItemCard(
                             alpha = if (item.isCompleted) 0.5f else 0.85f
                         )
                     )
+                }
+
+                item.dueAt?.let { dueAt ->
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Event,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
+                        Text(
+                            text = stringResource(
+                                if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                                    R.string.item_due_overdue
+                                } else {
+                                    R.string.item_due_date_display
+                                },
+                                DateUtils.formatDateTime(
+                                    context,
+                                    dueAt,
+                                    DateUtils.FORMAT_SHOW_DATE or
+                                        DateUtils.FORMAT_ABBREV_MONTH or
+                                        DateUtils.FORMAT_SHOW_TIME or
+                                        DateUtils.FORMAT_SHOW_YEAR
+                                )
+                            ),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                        )
+                    }
                 }
 
                 if (item.tag.isNotBlank()) {

@@ -50,6 +50,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.core.content.ContextCompat
 import com.fexed.checklist.ChecklistApplication
 import com.fexed.checklist.data.reminder.ChecklistAlarmReceiver
+import com.fexed.checklist.data.reminder.ItemDueDateScheduler
 import com.fexed.checklist.ui.components.ReminderConfigDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -96,6 +97,8 @@ import com.fexed.checklist.ui.components.IconHelper
 import com.fexed.checklist.ui.components.ImageViewerDialog
 import com.fexed.checklist.ui.components.TagChip
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,11 +124,41 @@ fun ChecklistDetailScreen(
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
     ) { _ -> }
+    val dueDatePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            coroutineScope.launch {
+                val dueItems = app.database.checklistDao().getItemsWithDueDates()
+                withContext(Dispatchers.IO) {
+                    dueItems
+                        .filter {
+                            !it.isCompleted && it.dueAt != null &&
+                                it.dueNotificationSentAt != it.dueAt
+                        }
+                        .forEach { item ->
+                            ItemDueDateScheduler.schedule(context, item.syncId, item.dueAt!!)
+                        }
+                }
+            }
+        }
+    }
 
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val checklistWithItems = uiState.checklistWithItems
     val checklist = checklistWithItems?.checklist
+
+    fun requestDueDateNotificationPermissionIfNeeded(dueAt: Long?) {
+        if (dueAt != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            dueDatePermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -268,6 +301,21 @@ fun ChecklistDetailScreen(
                                             sb.append("$box ${item.title}$tagPart\n")
                                             if (item.description.isNotBlank()) {
                                                 sb.append("    ${item.description}\n")
+                                            }
+                                            item.dueAt?.let { dueAt ->
+                                                val formattedDueDate = DateUtils.formatDateTime(
+                                                    context,
+                                                    dueAt,
+                                                    DateUtils.FORMAT_SHOW_DATE or
+                                                        DateUtils.FORMAT_ABBREV_MONTH or
+                                                        DateUtils.FORMAT_SHOW_TIME or
+                                                        DateUtils.FORMAT_SHOW_YEAR
+                                                )
+                                                val dueDateLabel = context.getString(
+                                                    R.string.item_due_date_display,
+                                                    formattedDueDate
+                                                )
+                                                sb.append("    $dueDateLabel\n")
                                             }
                                         }
                                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -582,8 +630,9 @@ fun ChecklistDetailScreen(
             initialItem = null,
             availableTags = checklistWithItems?.tags ?: emptyList(),
             onDismiss = { showAddItemSheet = false },
-            onConfirm = { title, description, tag, imageUri, requiredChecks ->
-                viewModel.addItem(title, description, tag, imageUri, requiredChecks)
+            onConfirm = { title, description, tag, imageUri, requiredChecks, dueAt ->
+                viewModel.addItem(title, description, tag, imageUri, requiredChecks, dueAt)
+                requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()
                     showAddItemSheet = false
@@ -599,8 +648,9 @@ fun ChecklistDetailScreen(
             initialItem = item,
             availableTags = checklistWithItems?.tags ?: emptyList(),
             onDismiss = { editingItem = null },
-            onConfirm = { title, description, tag, imageUri, requiredChecks ->
-                viewModel.updateItem(item, title, description, tag, imageUri, requiredChecks)
+            onConfirm = { title, description, tag, imageUri, requiredChecks, dueAt ->
+                viewModel.updateItem(item, title, description, tag, imageUri, requiredChecks, dueAt)
+                requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()
                     editingItem = null
@@ -705,5 +755,6 @@ fun ChecklistDetailScreen(
             }
         )
     }
+
 }
 }

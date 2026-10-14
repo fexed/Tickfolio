@@ -87,6 +87,11 @@
 
     <!-- Scheda elemento -->
     <string name="item_photo_desc">Foto dell\'elemento</string>
+    <string name="item_due_date_label">Scadenza (facoltativa)</string>
+    <string name="item_due_date_set">Imposta data e ora</string>
+    <string name="item_due_date_clear">Cancella</string>
+    <string name="item_due_date_display">Scadenza %1$s</string>
+    <string name="item_due_overdue">Scaduto · %1$s</string>
     <string name="more_item_options_desc">Altre opzioni per l\'elemento</string>
     <string name="menu_view_photo">Visualizza foto</string>
     <string name="menu_edit_item">Modifica elemento</string>
@@ -178,6 +183,10 @@
     <string name="default_alarm_desc">Hai delle attività da spuntare!</string>
     <string name="notification_title_format">Checklist: %1$s</string>
     <string name="notification_default_text">Non dimenticare di rivedere gli elementi della checklist</string>
+    <string name="channel_item_due_name">Scadenze degli elementi</string>
+    <string name="channel_item_due_description">Notifiche alla scadenza degli elementi della checklist</string>
+    <string name="item_due_notification_title">Elemento checklist in scadenza</string>
+    <string name="item_due_notification_text">%1$s della checklist %2$s è in scadenza</string>
     <string name="channel_geofence_name">Avvisi di prossimità delle checklist</string>
     <string name="channel_geofence_desc">Avvisi quando arrivi vicino alla posizione di una checklist</string>
     <string name="geofence_notif_title">📍 Checklist nelle vicinanze</string>

@@ -39,5 +39,9 @@ data class ChecklistItem(
     @ColumnInfo(defaultValue = "''")
     val syncId: String = UUID.randomUUID().toString(),
     @ColumnInfo(defaultValue = "0")
-    val updatedAt: Long = System.currentTimeMillis()
+    val updatedAt: Long = System.currentTimeMillis(),
+    @ColumnInfo(defaultValue = "NULL")
+    val dueAt: Long? = null,
+    @ColumnInfo(defaultValue = "NULL")
+    val dueNotificationSentAt: Long? = null
 )

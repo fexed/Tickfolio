@@ -97,8 +97,18 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklist_items")
     suspend fun getItemsForSync(): List<ChecklistItem>
 
+    @Query("SELECT * FROM checklist_items WHERE dueAt IS NOT NULL")
+    suspend fun getItemsWithDueDates(): List<ChecklistItem>
+
     @Query("SELECT * FROM checklist_items WHERE syncId = :syncId")
     suspend fun getItemBySyncId(syncId: String): ChecklistItem?
+
+    @Query(
+        """UPDATE checklist_items SET dueNotificationSentAt = :dueAt
+            WHERE syncId = :syncId AND dueAt = :dueAt AND isCompleted = 0
+            AND (dueNotificationSentAt IS NULL OR dueNotificationSentAt != :dueAt)"""
+    )
+    suspend fun markDueNotificationSent(syncId: String, dueAt: Long): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertItem(item: ChecklistItem): Long

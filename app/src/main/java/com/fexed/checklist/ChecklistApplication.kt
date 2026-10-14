@@ -4,6 +4,7 @@ import android.app.Application
 import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
+import com.fexed.checklist.data.reminder.ItemDueDateScheduler
 import com.fexed.checklist.data.recurrence.RecurringChecklistScheduler
 import com.fexed.checklist.data.sync.DriveSyncScheduler
 import com.fexed.checklist.data.repository.ChecklistRepository
@@ -32,6 +33,23 @@ class ChecklistApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         RecurringChecklistScheduler.ensureScheduled(this)
+        applicationScope.launch {
+            ItemDueDateScheduler.reconcile(
+                this@ChecklistApplication,
+                database.checklistDao().getItemsWithDueDates()
+            )
+        }
+        applicationScope.launch {
+            database.invalidationTracker
+                .createFlow("checklist_items")
+                .debounce(500)
+                .collect {
+                    ItemDueDateScheduler.reconcile(
+                        this@ChecklistApplication,
+                        database.checklistDao().getItemsWithDueDates()
+                    )
+                }
+        }
         applicationScope.launch {
             database.invalidationTracker
                 .createFlow("checklists", "checklist_items", "sync_tombstones")

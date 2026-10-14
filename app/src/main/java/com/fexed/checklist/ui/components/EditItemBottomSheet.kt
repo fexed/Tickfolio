@@ -1,6 +1,9 @@
 package com.fexed.checklist.ui.components
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.net.Uri
+import android.text.format.DateFormat as AndroidDateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -61,6 +65,7 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.fexed.checklist.R
@@ -69,6 +74,8 @@ import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
 import com.fexed.checklist.util.ImageStorageHelper
 import java.io.File
+import java.util.Calendar
+import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -77,7 +84,14 @@ fun EditItemBottomSheet(
     initialItem: ChecklistItem? = null,
     availableTags: List<String> = emptyList(),
     onDismiss: () -> Unit,
-    onConfirm: (title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) -> Unit
+    onConfirm: (
+        title: String,
+        description: String,
+        tag: String,
+        imageUri: String?,
+        requiredChecks: Int,
+        dueAt: Long?
+    ) -> Unit
 ) {
     val context = LocalContext.current
     var title by remember { mutableStateOf(initialItem?.title ?: "") }
@@ -87,8 +101,40 @@ fun EditItemBottomSheet(
     var titleError by remember { mutableStateOf(false) }
     var requiredChecks by remember { mutableStateOf(initialItem?.requiredChecks?.toString() ?: "1") }
     var requiredChecksError by remember { mutableStateOf(false) }
+    var dueAt by remember(initialItem?.syncId) { mutableStateOf(initialItem?.dueAt) }
 
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+
+    fun showDueDatePicker() {
+        val current = Calendar.getInstance().apply {
+            dueAt?.let(::setTimeInMillis)
+        }
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val selected = Calendar.getInstance().apply {
+                    dueAt?.let { setTimeInMillis(it) }
+                    set(year, month, dayOfMonth)
+                }
+                TimePickerDialog(
+                    context,
+                    { _, hourOfDay, minute ->
+                        selected.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        selected.set(Calendar.MINUTE, minute)
+                        selected.set(Calendar.SECOND, 0)
+                        selected.set(Calendar.MILLISECOND, 0)
+                        dueAt = selected.timeInMillis
+                    },
+                    current.get(Calendar.HOUR_OF_DAY),
+                    current.get(Calendar.MINUTE),
+                    AndroidDateFormat.is24HourFormat(context)
+                ).show()
+            },
+            current.get(Calendar.YEAR),
+            current.get(Calendar.MONTH),
+            current.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -242,6 +288,41 @@ fun EditItemBottomSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Text(
+                text = stringResource(R.string.item_due_date_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = ::showDueDatePicker,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.Event, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = dueAt?.let {
+                            java.text.DateFormat.getDateTimeInstance().format(Date(it))
+                        } ?: stringResource(R.string.item_due_date_set),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                if (dueAt != null) {
+                    TextButton(onClick = { dueAt = null }) {
+                        Text(stringResource(R.string.item_due_date_clear))
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             // Picture section
             Text(
                 text = stringResource(R.string.label_attached_photo),
@@ -377,7 +458,14 @@ fun EditItemBottomSheet(
                         titleError = title.isBlank()
                         requiredChecksError = checkCount == null || checkCount < 1
                         if (!titleError && checkCount != null && checkCount > 0) {
-                            onConfirm(title.trim(), description.trim(), tag.trim(), imageUri, checkCount)
+                            onConfirm(
+                                title.trim(),
+                                description.trim(),
+                                tag.trim(),
+                                imageUri,
+                                checkCount,
+                                dueAt
+                            )
                         }
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -429,7 +517,7 @@ private fun EditItemBottomSheetPreview() {
             ),
             availableTags = listOf("Essentials", "Documents", "Clothing"),
             onDismiss = {},
-            onConfirm = { _, _, _, _, _ -> }
+            onConfirm = { _, _, _, _, _, _ -> }
         )
     }
 }

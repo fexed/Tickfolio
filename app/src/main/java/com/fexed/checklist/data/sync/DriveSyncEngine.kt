@@ -192,7 +192,10 @@ class DriveSyncEngine(
                     position = record.position,
                     createdAt = record.createdAt,
                     syncId = record.syncId,
-                    updatedAt = record.updatedAt
+                    updatedAt = record.updatedAt,
+                    dueAt = record.dueAt,
+                    dueNotificationSentAt = existing?.dueNotificationSentAt
+                        ?.takeIf { it == record.dueAt }
                 )
                 if (existing == null) dao.insertItem(item)
                 else if (existing != item) dao.updateItem(item)

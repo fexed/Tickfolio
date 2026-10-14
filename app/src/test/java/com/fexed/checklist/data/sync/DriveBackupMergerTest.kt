@@ -12,12 +12,12 @@ class DriveBackupMergerTest {
         val local = DriveBackup(
             exportedAt = 10,
             checklists = listOf(checklist("list", updatedAt = 3, title = "Local title")),
-            items = listOf(item("item", updatedAt = 7, title = "Local item"))
+            items = listOf(item("item", updatedAt = 7, title = "Local item", dueAt = 300))
         )
         val remote = DriveBackup(
             exportedAt = 20,
             checklists = listOf(checklist("list", updatedAt = 5, title = "Remote title")),
-            items = listOf(item("item", updatedAt = 6, title = "Remote item"))
+            items = listOf(item("item", updatedAt = 6, title = "Remote item", dueAt = 200))
         )
 
         val merged = DriveBackupMerger.merge(local, remote)
@@ -25,6 +25,7 @@ class DriveBackupMergerTest {
         assertEquals(20, merged.exportedAt)
         assertEquals("Remote title", merged.checklists.single().title)
         assertEquals("Local item", merged.items.single().title)
+        assertEquals(300L, merged.items.single().dueAt)
     }
 
     @Test
@@ -101,7 +102,8 @@ class DriveBackupMergerTest {
         syncId: String,
         checklistSyncId: String = "list",
         updatedAt: Long,
-        title: String = "Item"
+        title: String = "Item",
+        dueAt: Long? = null
     ) = ItemRecord(
         syncId = syncId,
         checklistSyncId = checklistSyncId,
@@ -114,6 +116,7 @@ class DriveBackupMergerTest {
         requiredChecks = 1,
         completedChecks = 0,
         position = 0,
-        createdAt = 1
+        createdAt = 1,
+        dueAt = dueAt
     )
 }

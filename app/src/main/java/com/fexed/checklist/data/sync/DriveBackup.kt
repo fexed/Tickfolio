@@ -70,7 +70,8 @@ data class ItemRecord(
     val requiredChecks: Int,
     val completedChecks: Int,
     val position: Int,
-    val createdAt: Long
+    val createdAt: Long,
+    val dueAt: Long? = null
 ) {
     companion object {
         fun from(item: ChecklistItem, checklistSyncId: String) = ItemRecord(
@@ -85,7 +86,8 @@ data class ItemRecord(
             requiredChecks = item.requiredChecks,
             completedChecks = item.completedChecks,
             position = item.position,
-            createdAt = item.createdAt
+            createdAt = item.createdAt,
+            dueAt = item.dueAt
         )
     }
 }

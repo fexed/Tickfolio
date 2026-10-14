@@ -12,7 +12,7 @@ import com.fexed.checklist.data.model.SyncTombstone
 
 @Database(
     entities = [Checklist::class, ChecklistItem::class, SyncTombstone::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class ChecklistDatabase : RoomDatabase() {
@@ -61,6 +61,13 @@ abstract class ChecklistDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE checklist_items ADD COLUMN dueAt INTEGER DEFAULT NULL")
+                db.execSQL("ALTER TABLE checklist_items ADD COLUMN dueNotificationSentAt INTEGER DEFAULT NULL")
+            }
+        }
+
         @Volatile
         private var INSTANCE: ChecklistDatabase? = null
 
@@ -71,7 +78,7 @@ abstract class ChecklistDatabase : RoomDatabase() {
                     ChecklistDatabase::class.java,
                     "checklist_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

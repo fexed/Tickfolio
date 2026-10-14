@@ -88,13 +88,28 @@ class ChecklistDetailViewModel(
         }
     }
 
-    fun addItem(title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) {
+    fun addItem(
+        title: String,
+        description: String,
+        tag: String,
+        imageUri: String?,
+        requiredChecks: Int,
+        dueAt: Long?
+    ) {
         viewModelScope.launch {
-            repository.addItem(checklistId, title, description, tag, imageUri, requiredChecks)
+            repository.addItem(checklistId, title, description, tag, imageUri, requiredChecks, dueAt)
         }
     }
 
-    fun updateItem(item: ChecklistItem, title: String, description: String, tag: String, imageUri: String?, requiredChecks: Int) {
+    fun updateItem(
+        item: ChecklistItem,
+        title: String,
+        description: String,
+        tag: String,
+        imageUri: String?,
+        requiredChecks: Int,
+        dueAt: Long?
+    ) {
         viewModelScope.launch {
             val completedChecks = item.completedChecks.coerceIn(0, requiredChecks)
             repository.updateItem(
@@ -105,7 +120,13 @@ class ChecklistDetailViewModel(
                     imageUri = imageUri,
                     isCompleted = completedChecks >= requiredChecks,
                     requiredChecks = requiredChecks,
-                    completedChecks = completedChecks
+                    completedChecks = completedChecks,
+                    dueAt = dueAt,
+                    dueNotificationSentAt = if (item.dueAt == dueAt) {
+                        item.dueNotificationSentAt
+                    } else {
+                        null
+                    }
                 )
             )
         }
