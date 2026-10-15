@@ -19,9 +19,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Checklist
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -31,10 +35,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -65,6 +72,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.fexed.checklist.ChecklistApplication
 import com.fexed.checklist.data.model.Checklist
+import com.fexed.checklist.data.preferences.ChecklistSortOption
 import com.fexed.checklist.data.reminder.ChecklistAlarmReceiver
 import com.fexed.checklist.ui.components.ChecklistCard
 import com.fexed.checklist.ui.components.EditChecklistDialog
@@ -92,6 +100,7 @@ fun OverviewScreen(
     var showDeleteSelectedDialog by remember { mutableStateOf(false) }
     var selectedChecklistIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var showSettingsDialog by remember { mutableStateOf(false) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
     var searchActive by remember { mutableStateOf(false) }
     val isSelectionMode = selectedChecklistIds.isNotEmpty()
     val visibleChecklistIds = uiState.checklists.map { it.checklist.id }
@@ -177,6 +186,77 @@ fun OverviewScreen(
                                 contentDescription = if (searchActive) stringResource(R.string.close_search_desc) else stringResource(R.string.search_desc),
                                 tint = MaterialTheme.colorScheme.onBackground
                             )
+                        }
+                        Box {
+                            IconButton(onClick = { sortMenuExpanded = true }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.Sort,
+                                    contentDescription = stringResource(R.string.sort_checklists_desc),
+                                    tint = MaterialTheme.colorScheme.onBackground
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false }
+                            ) {
+                                ChecklistSortOption.values().forEach { option ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                stringResource(
+                                                    when (option) {
+                                                        ChecklistSortOption.TITLE -> R.string.sort_by_title
+                                                        ChecklistSortOption.DUE_DATE -> R.string.sort_by_due_date
+                                                        ChecklistSortOption.LAST_EDITED -> R.string.sort_by_last_edit
+                                                        ChecklistSortOption.CREATED -> R.string.sort_by_creation_date
+                                                        ChecklistSortOption.LAST_OPENED -> R.string.sort_by_last_opened
+                                                    }
+                                                )
+                                            )
+                                        },
+                                        onClick = {
+                                            viewModel.setChecklistSortOption(option)
+                                            sortMenuExpanded = false
+                                        },
+                                        trailingIcon = {
+                                            if (uiState.userPreferences.checklistSortOption == option) {
+                                                Icon(Icons.Default.Check, contentDescription = null)
+                                            }
+                                        }
+                                    )
+                                }
+                                HorizontalDivider()
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.sort_ascending)) },
+                                    onClick = {
+                                        viewModel.setChecklistSortAscending(true)
+                                        sortMenuExpanded = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.ArrowUpward, contentDescription = null)
+                                    },
+                                    trailingIcon = {
+                                        if (uiState.userPreferences.checklistSortAscending) {
+                                            Icon(Icons.Default.Check, contentDescription = null)
+                                        }
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.sort_descending)) },
+                                    onClick = {
+                                        viewModel.setChecklistSortAscending(false)
+                                        sortMenuExpanded = false
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.ArrowDownward, contentDescription = null)
+                                    },
+                                    trailingIcon = {
+                                        if (!uiState.userPreferences.checklistSortAscending) {
+                                            Icon(Icons.Default.Check, contentDescription = null)
+                                        }
+                                    }
+                                )
+                            }
                         }
                         IconButton(onClick = { showSettingsDialog = true }) {
                             Icon(

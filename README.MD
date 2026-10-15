@@ -15,6 +15,8 @@ carry the details that make it useful.
   when it is due. Notifications are scheduled locally and only sent for
   incomplete items; Android notification permission is requested when needed.
 - Search checklists and filter checklist items by text, tag, or completion.
+- Sort checklists by title, due date, last edit, creation date, or last opened
+  time in either ascending or descending order; the chosen sort is remembered.
 - Long-press a checklist in the overview to select multiple checklists for deletion.
 - Set date-and-time reminders or location-proximity reminders.
 - Automatically reset checklist items daily, weekly, or monthly, with a chosen

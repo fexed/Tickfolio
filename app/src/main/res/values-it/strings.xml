@@ -39,6 +39,14 @@
     <string name="close_search_desc">Chiudi la ricerca</string>
     <string name="search_desc">Cerca</string>
     <string name="settings_desc">Impostazioni</string>
+    <string name="sort_checklists_desc">Ordina checklist</string>
+    <string name="sort_by_title">Titolo</string>
+    <string name="sort_by_due_date">Data di scadenza</string>
+    <string name="sort_by_last_edit">Ultima modifica</string>
+    <string name="sort_by_creation_date">Data di creazione</string>
+    <string name="sort_by_last_opened">Ultima apertura</string>
+    <string name="sort_ascending">Crescente</string>
+    <string name="sort_descending">Decrescente</string>
     <string name="create_checklist_fab">Crea checklist</string>
     <string name="empty_checklists_title">Nessuna checklist</string>
     <string name="empty_checklists_found_title">Nessuna checklist trovata</string>

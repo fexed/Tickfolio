@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.fexed.checklist.data.local.ChecklistDao
 import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
+import com.fexed.checklist.data.preferences.ChecklistSortOption
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
@@ -56,7 +57,11 @@ class OverviewViewModel(
             }
         }
         OverviewUiState(
-            checklists = filtered,
+            checklists = sortChecklists(
+                checklists = filtered,
+                option = prefs.checklistSortOption,
+                ascending = prefs.checklistSortAscending
+            ),
             searchQuery = query,
             userPreferences = prefs,
             isLoading = false
@@ -69,6 +74,18 @@ class OverviewViewModel(
 
     fun onSearchQueryChanged(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setChecklistSortOption(option: ChecklistSortOption) {
+        viewModelScope.launch {
+            repository.setChecklistSortOption(option)
+        }
+    }
+
+    fun setChecklistSortAscending(ascending: Boolean) {
+        viewModelScope.launch {
+            repository.setChecklistSortAscending(ascending)
+        }
     }
 
     fun createChecklist(title: String, description: String, iconName: String, onCreated: (Long) -> Unit) {

@@ -39,6 +39,14 @@
     <string name="close_search_desc">Close Search</string>
     <string name="search_desc">Search</string>
     <string name="settings_desc">Settings</string>
+    <string name="sort_checklists_desc">Sort checklists</string>
+    <string name="sort_by_title">Title</string>
+    <string name="sort_by_due_date">Due date</string>
+    <string name="sort_by_last_edit">Last edited</string>
+    <string name="sort_by_creation_date">Date created</string>
+    <string name="sort_by_last_opened">Last opened</string>
+    <string name="sort_ascending">Ascending</string>
+    <string name="sort_descending">Descending</string>
     <string name="create_checklist_fab">Create Checklist</string>
     <string name="empty_checklists_title">No checklists yet</string>
     <string name="empty_checklists_found_title">No checklists found</string>

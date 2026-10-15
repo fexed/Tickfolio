@@ -6,6 +6,7 @@ import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.AppPreferences
+import com.fexed.checklist.data.preferences.ChecklistSortOption
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
@@ -218,6 +219,14 @@ class ChecklistRepository(
 
     suspend fun setThemeMode(mode: ThemeMode) {
         appPreferences.setThemeMode(mode)
+    }
+
+    suspend fun setChecklistSortOption(option: ChecklistSortOption) {
+        appPreferences.setChecklistSortOption(option)
+    }
+
+    suspend fun setChecklistSortAscending(ascending: Boolean) {
+        appPreferences.setChecklistSortAscending(ascending)
     }
 
     suspend fun setDriveFolderName(name: String) {

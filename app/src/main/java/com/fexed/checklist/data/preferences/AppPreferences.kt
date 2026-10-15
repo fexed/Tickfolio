@@ -24,6 +24,14 @@ enum class ThemeMode(val label: String) {
     DARK("Parchment Dark")
 }
 
+enum class ChecklistSortOption {
+    TITLE,
+    DUE_DATE,
+    LAST_EDITED,
+    CREATED,
+    LAST_OPENED
+}
+
 data class UserPreferences(
     val startPage: StartPageOption,
     val themeMode: ThemeMode,
@@ -32,7 +40,9 @@ data class UserPreferences(
     val driveConsentAsked: Boolean = false,
     val driveFolderName: String = "Tickfolio",
     val lastDriveSyncAt: Long? = null,
-    val driveSyncError: String? = null
+    val driveSyncError: String? = null,
+    val checklistSortOption: ChecklistSortOption = ChecklistSortOption.LAST_OPENED,
+    val checklistSortAscending: Boolean = false
 )
 
 class AppPreferences(private val context: Context) {
@@ -46,6 +56,8 @@ class AppPreferences(private val context: Context) {
         val KEY_DRIVE_FOLDER_NAME = stringPreferencesKey("drive_folder_name")
         val KEY_LAST_DRIVE_SYNC_AT = longPreferencesKey("last_drive_sync_at")
         val KEY_DRIVE_SYNC_ERROR = stringPreferencesKey("drive_sync_error")
+        val KEY_CHECKLIST_SORT_OPTION = stringPreferencesKey("checklist_sort_option")
+        val KEY_CHECKLIST_SORT_ASCENDING = booleanPreferencesKey("checklist_sort_ascending")
     }
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -64,6 +76,13 @@ class AppPreferences(private val context: Context) {
         }
 
         val lastOpenedId = prefs[KEY_LAST_OPENED_ID]
+        val checklistSortOption = try {
+            ChecklistSortOption.valueOf(
+                prefs[KEY_CHECKLIST_SORT_OPTION] ?: ChecklistSortOption.LAST_OPENED.name
+            )
+        } catch (_: IllegalArgumentException) {
+            ChecklistSortOption.LAST_OPENED
+        }
 
         UserPreferences(
             startPage = startPage,
@@ -73,7 +92,9 @@ class AppPreferences(private val context: Context) {
             driveConsentAsked = prefs[KEY_DRIVE_CONSENT_ASKED] ?: false,
             driveFolderName = prefs[KEY_DRIVE_FOLDER_NAME] ?: "Tickfolio",
             lastDriveSyncAt = prefs[KEY_LAST_DRIVE_SYNC_AT],
-            driveSyncError = prefs[KEY_DRIVE_SYNC_ERROR]
+            driveSyncError = prefs[KEY_DRIVE_SYNC_ERROR],
+            checklistSortOption = checklistSortOption,
+            checklistSortAscending = prefs[KEY_CHECKLIST_SORT_ASCENDING] ?: false
         )
     }
 
@@ -86,6 +107,18 @@ class AppPreferences(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { prefs ->
             prefs[KEY_THEME_MODE] = mode.name
+        }
+    }
+
+    suspend fun setChecklistSortOption(option: ChecklistSortOption) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_CHECKLIST_SORT_OPTION] = option.name
+        }
+    }
+
+    suspend fun setChecklistSortAscending(ascending: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_CHECKLIST_SORT_ASCENDING] = ascending
         }
     }
 
