@@ -6,10 +6,12 @@ import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.SyncTombstone
+import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.util.ImageStorageHelper
 import com.google.gson.Gson
 import java.io.File
 import java.io.IOException
+import kotlinx.coroutines.flow.first
 
 class DriveSyncEngine(
     private val context: Context,
@@ -79,7 +81,8 @@ class DriveSyncEngine(
                 exportedAt = 0,
                 checklists = checklists.map(ChecklistRecord::from),
                 items = items,
-                tombstones = dao.getSyncTombstones()
+                tombstones = dao.getSyncTombstones(),
+                tagColors = AppPreferences(context).userPreferencesFlow.first().tagColors
             ),
             photoFilesByName = imageFiles
         )
@@ -123,6 +126,9 @@ class DriveSyncEngine(
 
     private suspend fun applyBackup(backup: DriveBackup, imagePaths: Map<String, String>) {
         val dao = database.checklistDao()
+        val appPreferences = AppPreferences(context)
+        val currentTagColors = appPreferences.userPreferencesFlow.first().tagColors
+        var mergedTagColors = currentTagColors
         database.withTransaction {
             val currentChecklists = dao.getChecklistsForSync()
             val currentChecklistSyncIds = currentChecklists.associate { it.id to it.syncId }
@@ -134,9 +140,11 @@ class DriveSyncEngine(
             val currentBackup = DriveBackup(
                 checklists = currentChecklists.map(ChecklistRecord::from),
                 items = currentItems,
-                tombstones = dao.getSyncTombstones()
+                tombstones = dao.getSyncTombstones(),
+                tagColors = currentTagColors
             )
             val latestBackup = DriveBackupMerger.merge(currentBackup, backup)
+            mergedTagColors = latestBackup.tagColors.orEmpty()
 
             latestBackup.checklists.forEach { record ->
                 val existing = dao.getChecklistBySyncId(record.syncId)
@@ -184,7 +192,9 @@ class DriveSyncEngine(
                     checklistId = checklistId,
                     title = record.title,
                     description = record.description,
-                    tag = record.tag,
+                    tags = record.tags.orEmpty().ifEmpty {
+                        listOfNotNull(record.tag.takeIf(String::isNotBlank))
+                    },
                     imageUri = imageUri,
                     isCompleted = completedChecks >= requiredChecks,
                     requiredChecks = requiredChecks,
@@ -215,6 +225,7 @@ class DriveSyncEngine(
                 }
             }
         }
+        appPreferences.setTagColors(mergedTagColors)
     }
 
     private fun samePayload(left: DriveBackup, right: DriveBackup): Boolean {
@@ -222,7 +233,8 @@ class DriveSyncEngine(
             exportedAt = 0,
             checklists = backup.checklists.sortedBy { it.syncId },
             items = backup.items.sortedBy { it.syncId },
-            tombstones = backup.tombstones.sortedWith(compareBy({ it.recordType }, { it.syncId }))
+            tombstones = backup.tombstones.sortedWith(compareBy({ it.recordType }, { it.syncId })),
+            tagColors = backup.tagColors.orEmpty().toSortedMap()
         )
         return gson.toJson(normalize(left)) == gson.toJson(normalize(right))
     }

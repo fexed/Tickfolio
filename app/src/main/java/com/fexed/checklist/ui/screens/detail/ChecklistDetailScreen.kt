@@ -96,6 +96,7 @@ import com.fexed.checklist.ui.components.EditItemBottomSheet
 import com.fexed.checklist.ui.components.IconHelper
 import com.fexed.checklist.ui.components.ImageViewerDialog
 import com.fexed.checklist.ui.components.TagChip
+import com.fexed.checklist.ui.components.tagColorFor
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -297,7 +298,11 @@ fun ChecklistDetailScreen(
                                                 item.completedChecks > 0 -> "[${item.completedChecks}/${item.requiredChecks}]"
                                                 else -> "[ ]"
                                             }
-                                            val tagPart = if (item.tag.isNotBlank()) " (#${item.tag})" else ""
+                                            val tagPart = if (item.tags.isNotEmpty()) {
+                                                " (#${item.tags.joinToString(", ")})"
+                                            } else {
+                                                ""
+                                            }
                                             sb.append("$box ${item.title}$tagPart\n")
                                             if (item.description.isNotBlank()) {
                                                 sb.append("    ${item.description}\n")
@@ -549,6 +554,7 @@ fun ChecklistDetailScreen(
                             TagChip(
                                 tag = tag,
                                 isSelected = uiState.selectedTag.equals(tag, ignoreCase = true),
+                                colorArgb = tagColorFor(tag, uiState.tagColors),
                                 onClick = {
                                     viewModel.onTagSelected(
                                         if (uiState.selectedTag.equals(tag, ignoreCase = true)) null else tag
@@ -614,7 +620,8 @@ fun ChecklistDetailScreen(
                                 onDelete = { viewModel.deleteItem(item.id) },
                                 onViewImage = { imagePath ->
                                     viewingImageItem = Pair(imagePath, item.title)
-                                }
+                                },
+                                tagColors = uiState.tagColors
                             )
                         }
                     }
@@ -629,9 +636,11 @@ fun ChecklistDetailScreen(
             sheetState = bottomSheetState,
             initialItem = null,
             availableTags = checklistWithItems?.tags ?: emptyList(),
+            tagColors = uiState.tagColors,
+            onTagColorChange = viewModel::setTagColor,
             onDismiss = { showAddItemSheet = false },
-            onConfirm = { title, description, tag, imageUri, requiredChecks, dueAt ->
-                viewModel.addItem(title, description, tag, imageUri, requiredChecks, dueAt)
+            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt ->
+                viewModel.addItem(title, description, tags, imageUri, requiredChecks, dueAt)
                 requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()
@@ -647,9 +656,11 @@ fun ChecklistDetailScreen(
             sheetState = bottomSheetState,
             initialItem = item,
             availableTags = checklistWithItems?.tags ?: emptyList(),
+            tagColors = uiState.tagColors,
+            onTagColorChange = viewModel::setTagColor,
             onDismiss = { editingItem = null },
-            onConfirm = { title, description, tag, imageUri, requiredChecks, dueAt ->
-                viewModel.updateItem(item, title, description, tag, imageUri, requiredChecks, dueAt)
+            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt ->
+                viewModel.updateItem(item, title, description, tags, imageUri, requiredChecks, dueAt)
                 requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()

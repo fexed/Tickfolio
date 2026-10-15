@@ -109,7 +109,7 @@ object WearSync {
                 WearItemSnapshot(
                     syncId = item.syncId,
                     title = item.title,
-                    tag = item.tag,
+                    tag = item.tags.joinToString(", "),
                     requiredChecks = item.requiredChecks,
                     completedChecks = item.completedChecks,
                     updatedAt = item.updatedAt,

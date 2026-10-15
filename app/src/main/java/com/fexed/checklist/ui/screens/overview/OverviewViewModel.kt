@@ -52,7 +52,7 @@ class OverviewViewModel(
                         item.items.any {
                             it.title.lowercase().contains(q) ||
                                     it.description.lowercase().contains(q) ||
-                                    it.tag.lowercase().contains(q)
+                                    it.tags.any { tag -> tag.lowercase().contains(q) }
                         }
             }
         }

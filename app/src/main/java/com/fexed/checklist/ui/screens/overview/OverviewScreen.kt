@@ -456,7 +456,8 @@ fun OverviewScreen(
                                     }
                                 }
                                 reminderChecklist = checklistWithItems.checklist
-                            }
+                            },
+                            tagColors = uiState.userPreferences.tagColors
                         )
                     }
                     item(key = "app_name_footer") {

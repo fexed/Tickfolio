@@ -82,9 +82,9 @@ class ChecklistApplication : Application() {
         }
         applicationScope.launch {
             appPreferences.userPreferencesFlow
-                .map { it.driveBackupEnabled to it.driveFolderName }
+                .map { Triple(it.driveBackupEnabled, it.driveFolderName, it.tagColors) }
                 .distinctUntilChanged()
-                .collect { (enabled, _) ->
+                .collect { (enabled, _, _) ->
                     if (enabled) {
                         DriveSyncScheduler.ensureScheduled(this@ChecklistApplication)
                         DriveSyncScheduler.enqueueNow(this@ChecklistApplication)

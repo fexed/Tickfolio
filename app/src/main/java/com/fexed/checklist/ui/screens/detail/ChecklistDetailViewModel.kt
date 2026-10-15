@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
+import com.fexed.checklist.data.model.normalizeTags
+import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.repository.ChecklistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,6 +20,7 @@ data class DetailUiState(
     val checklistWithItems: ChecklistWithItems? = null,
     val selectedTag: String? = null,
     val searchQuery: String = "",
+    val tagColors: Map<String, TagColorRecord> = emptyMap(),
     val hideCompleted: Boolean = false,
     val isLoading: Boolean = true
 ) {
@@ -25,11 +28,13 @@ data class DetailUiState(
         get() {
             val items = checklistWithItems?.items ?: emptyList()
             return items.filter { item ->
-                val matchesTag = selectedTag == null || item.tag.equals(selectedTag, ignoreCase = true)
+                val matchesTag = selectedTag == null || item.tags.any {
+                    it.equals(selectedTag, ignoreCase = true)
+                }
                 val matchesSearch = searchQuery.isBlank() ||
                         item.title.contains(searchQuery, ignoreCase = true) ||
                         item.description.contains(searchQuery, ignoreCase = true) ||
-                        item.tag.contains(searchQuery, ignoreCase = true)
+                        item.tags.any { it.contains(searchQuery, ignoreCase = true) }
                 val matchesHideCompleted = !hideCompleted || !item.isCompleted
                 matchesTag && matchesSearch && matchesHideCompleted
             }
@@ -55,12 +60,14 @@ class ChecklistDetailViewModel(
         repository.getChecklist(checklistId),
         _selectedTag,
         _searchQuery,
-        _hideCompleted
-    ) { checklistWithItems, tag, query, hideComp ->
+        _hideCompleted,
+        repository.userPreferences
+    ) { checklistWithItems, tag, query, hideComp, preferences ->
         DetailUiState(
             checklistWithItems = checklistWithItems,
             selectedTag = tag,
             searchQuery = query,
+            tagColors = preferences.tagColors,
             hideCompleted = hideComp,
             isLoading = false
         )
@@ -78,6 +85,12 @@ class ChecklistDetailViewModel(
         _searchQuery.value = query
     }
 
+    fun setTagColor(tag: String, colorArgb: Int) {
+        viewModelScope.launch {
+            repository.setTagColor(tag, colorArgb)
+        }
+    }
+
     fun toggleHideCompleted() {
         _hideCompleted.value = !_hideCompleted.value
     }
@@ -91,13 +104,13 @@ class ChecklistDetailViewModel(
     fun addItem(
         title: String,
         description: String,
-        tag: String,
+        tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
         dueAt: Long?
     ) {
         viewModelScope.launch {
-            repository.addItem(checklistId, title, description, tag, imageUri, requiredChecks, dueAt)
+            repository.addItem(checklistId, title, description, tags, imageUri, requiredChecks, dueAt)
         }
     }
 
@@ -105,7 +118,7 @@ class ChecklistDetailViewModel(
         item: ChecklistItem,
         title: String,
         description: String,
-        tag: String,
+        tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
         dueAt: Long?
@@ -116,7 +129,7 @@ class ChecklistDetailViewModel(
                 item.copy(
                     title = title,
                     description = description,
-                    tag = tag,
+                    tags = normalizeTags(tags),
                     imageUri = imageUri,
                     isCompleted = completedChecks >= requiredChecks,
                     requiredChecks = requiredChecks,

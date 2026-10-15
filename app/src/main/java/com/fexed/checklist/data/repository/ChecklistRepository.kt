@@ -5,9 +5,11 @@ import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistWithItems
+import com.fexed.checklist.data.model.normalizeTags
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.preferences.ChecklistSortOption
 import com.fexed.checklist.data.preferences.StartPageOption
+import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
 import com.fexed.checklist.util.RecurrenceSchedule
@@ -162,7 +164,7 @@ class ChecklistRepository(
         checklistId: Long,
         title: String,
         description: String = "",
-        tag: String = "",
+        tags: List<String> = emptyList(),
         imageUri: String? = null,
         requiredChecks: Int = 1,
         dueAt: Long? = null
@@ -171,7 +173,7 @@ class ChecklistRepository(
             checklistId = checklistId,
             title = title.trim(),
             description = description.trim(),
-            tag = tag.trim(),
+            tags = normalizeTags(tags),
             imageUri = imageUri,
             isCompleted = false,
             requiredChecks = requiredChecks.coerceAtLeast(1),
@@ -227,6 +229,14 @@ class ChecklistRepository(
 
     suspend fun setChecklistSortAscending(ascending: Boolean) {
         appPreferences.setChecklistSortAscending(ascending)
+    }
+
+    suspend fun setTagColor(tag: String, colorArgb: Int) {
+        appPreferences.setTagColor(tag, colorArgb)
+    }
+
+    suspend fun setTagColors(tagColors: Map<String, TagColorRecord>) {
+        appPreferences.setTagColors(tagColors)
     }
 
     suspend fun setDriveFolderName(name: String) {

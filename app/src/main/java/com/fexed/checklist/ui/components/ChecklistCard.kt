@@ -56,6 +56,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
@@ -72,7 +73,8 @@ fun ChecklistCard(
     modifier: Modifier = Modifier,
     onConfigureReminders: (() -> Unit)? = null,
     isSelected: Boolean = false,
-    onLongClick: (() -> Unit)? = null
+    onLongClick: (() -> Unit)? = null,
+    tagColors: Map<String, TagColorRecord> = emptyMap()
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
     val checklist = checklistWithItems.checklist
@@ -327,7 +329,7 @@ fun ChecklistCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     tags.take(4).forEach { tag ->
-                        TagChip(tag = tag)
+                        TagChip(tag = tag, colorArgb = tagColorFor(tag, tagColors))
                     }
                     if (tags.size > 4) {
                         Text(
@@ -358,11 +360,11 @@ private fun ChecklistCardLightPreview() {
             geofenceName = "Home"
         )
         val items = listOf(
-            ChecklistItem(id = 1, checklistId = 1, title = "Kitchen stove", tag = "Kitchen", isCompleted = true),
-            ChecklistItem(id = 2, checklistId = 1, title = "Dust shelves", tag = "Living", isCompleted = true),
-            ChecklistItem(id = 3, checklistId = 1, title = "Mop floors", tag = "General", isCompleted = false),
-            ChecklistItem(id = 4, checklistId = 1, title = "Vacuum carpets", tag = "Groceries", isCompleted = false),
-            ChecklistItem(id = 5, checklistId = 1, title = "Water plants", tag = "Gardening", isCompleted = false)
+            ChecklistItem(id = 1, checklistId = 1, title = "Kitchen stove", tags = listOf("Kitchen"), isCompleted = true),
+            ChecklistItem(id = 2, checklistId = 1, title = "Dust shelves", tags = listOf("Living"), isCompleted = true),
+            ChecklistItem(id = 3, checklistId = 1, title = "Mop floors", tags = listOf("General"), isCompleted = false),
+            ChecklistItem(id = 4, checklistId = 1, title = "Vacuum carpets", tags = listOf("Groceries"), isCompleted = false),
+            ChecklistItem(id = 5, checklistId = 1, title = "Water plants", tags = listOf("Gardening"), isCompleted = false)
         )
         ChecklistCard(
             checklistWithItems = ChecklistWithItems(checklist, items),
@@ -391,8 +393,8 @@ private fun ChecklistCardDarkPreview() {
             geofenceLng = null
         )
         val items = listOf(
-            ChecklistItem(id = 4, checklistId = 2, title = "Install CPU & Cooler", tag = "Hardware", isCompleted = true),
-            ChecklistItem(id = 5, checklistId = 2, title = "Route PSU cables", tag = "Hardware", isCompleted = false)
+            ChecklistItem(id = 4, checklistId = 2, title = "Install CPU & Cooler", tags = listOf("Hardware"), isCompleted = true),
+            ChecklistItem(id = 5, checklistId = 2, title = "Route PSU cables", tags = listOf("Hardware"), isCompleted = false)
         )
         ChecklistCard(
             checklistWithItems = ChecklistWithItems(checklist, items),

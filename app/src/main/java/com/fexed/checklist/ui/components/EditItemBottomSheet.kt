@@ -25,17 +25,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -58,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalContext
@@ -71,6 +77,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.normalizeTags
+import com.fexed.checklist.data.model.tagKey
+import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
 import com.fexed.checklist.util.ImageStorageHelper
@@ -84,11 +93,13 @@ fun EditItemBottomSheet(
     sheetState: SheetState,
     initialItem: ChecklistItem? = null,
     availableTags: List<String> = emptyList(),
+    tagColors: Map<String, TagColorRecord> = emptyMap(),
+    onTagColorChange: (String, Int) -> Unit = { _, _ -> },
     onDismiss: () -> Unit,
     onConfirm: (
         title: String,
         description: String,
-        tag: String,
+        tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
         dueAt: Long?
@@ -97,7 +108,11 @@ fun EditItemBottomSheet(
     val context = LocalContext.current
     var title by remember { mutableStateOf(initialItem?.title ?: "") }
     var description by remember { mutableStateOf(initialItem?.description ?: "") }
-    var tag by remember { mutableStateOf(initialItem?.tag ?: "") }
+    var tagInput by remember { mutableStateOf("") }
+    var selectedTags by remember(initialItem?.syncId) {
+        mutableStateOf(initialItem?.tags.orEmpty())
+    }
+    var colorPickerTag by remember { mutableStateOf<String?>(null) }
     var imageUri by remember { mutableStateOf(initialItem?.imageUri) }
     var titleError by remember { mutableStateOf(false) }
     var requiredChecks by remember { mutableStateOf(initialItem?.requiredChecks?.toString() ?: "1") }
@@ -250,21 +265,72 @@ fun EditItemBottomSheet(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Tag input
-            OutlinedTextField(
-                value = tag,
-                onValueChange = { tag = it },
-                label = { Text(stringResource(R.string.label_item_tag)) },
-                placeholder = { Text(stringResource(R.string.placeholder_item_tag)) },
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                singleLine = true,
+            // Tags
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = tagInput,
+                    onValueChange = { tagInput = it },
+                    label = { Text(stringResource(R.string.label_item_tag)) },
+                    placeholder = { Text(stringResource(R.string.placeholder_item_tag)) },
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                    )
                 )
-            )
+                IconButton(
+                    onClick = {
+                        selectedTags = normalizeTags(selectedTags + tagInput)
+                        tagInput = ""
+                    },
+                    enabled = tagInput.isNotBlank()
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_tag_desc))
+                }
+            }
+
+            if (selectedTags.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(R.string.selected_tags_label),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    selectedTags.forEach { selectedTag ->
+                        TagChip(
+                            tag = selectedTag,
+                            colorArgb = tagColorFor(selectedTag, tagColors),
+                            onClick = {
+                                selectedTags = selectedTags.filterNot {
+                                    it.equals(selectedTag, ignoreCase = true)
+                                }
+                            }
+                        )
+                        IconButton(
+                            onClick = { colorPickerTag = selectedTag },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Palette,
+                                contentDescription = stringResource(R.string.choose_tag_color_desc, selectedTag),
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
 
             // Tag suggestions chips
             if (availableTags.isNotEmpty()) {
@@ -280,11 +346,30 @@ fun EditItemBottomSheet(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     availableTags.forEach { existingTag ->
-                        TagChip(
-                            tag = existingTag,
-                            isSelected = tag.equals(existingTag, ignoreCase = true),
-                            onClick = { tag = existingTag }
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TagChip(
+                                tag = existingTag,
+                                isSelected = selectedTags.any { it.equals(existingTag, ignoreCase = true) },
+                                colorArgb = tagColorFor(existingTag, tagColors),
+                                onClick = {
+                                    selectedTags = if (selectedTags.any { it.equals(existingTag, ignoreCase = true) }) {
+                                        selectedTags.filterNot { it.equals(existingTag, ignoreCase = true) }
+                                    } else {
+                                        normalizeTags(selectedTags + existingTag)
+                                    }
+                                }
+                            )
+                            IconButton(
+                                onClick = { colorPickerTag = existingTag },
+                                modifier = Modifier.size(32.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Palette,
+                                    contentDescription = stringResource(R.string.choose_tag_color_desc, existingTag),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
                     }
                 }
 
@@ -465,7 +550,7 @@ fun EditItemBottomSheet(
                             onConfirm(
                                 title.trim(),
                                 description.trim(),
-                                tag.trim(),
+                                normalizeTags(selectedTags + tagInput),
                                 imageUri,
                                 checkCount,
                                 dueAt
@@ -507,6 +592,18 @@ fun EditItemBottomSheet(
             sheetContent()
         }
     }
+
+    colorPickerTag?.let { tag ->
+        TagColorPickerDialog(
+            tag = tag,
+            selectedColor = tagColors[tagKey(tag)]?.colorArgb ?: tagColorFor(tag, tagColors),
+            onDismiss = { colorPickerTag = null },
+            onColorSelected = { color ->
+                onTagColorChange(tag, color)
+                colorPickerTag = null
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -524,4 +621,50 @@ private fun EditItemBottomSheetPreview() {
             onConfirm = { _, _, _, _, _, _ -> }
         )
     }
+
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TagColorPickerDialog(
+    tag: String,
+    selectedColor: Int,
+    onDismiss: () -> Unit,
+    onColorSelected: (Int) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.choose_tag_color_title, tag)) },
+        text = {
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TagColorPalette.forEach { colorArgb ->
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(Color(colorArgb))
+                            .border(2.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                            .clickable { onColorSelected(colorArgb) },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (colorArgb == selectedColor) {
+                            Icon(
+                                imageVector = Icons.Default.Check,
+                                contentDescription = null,
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.action_cancel))
+            }
+        }
+    )
 }

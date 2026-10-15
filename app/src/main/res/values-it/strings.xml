@@ -129,9 +129,13 @@
     <string name="placeholder_item_title">es. Passaporto, olio motore, pulire i fornelli</string>
     <string name="label_item_description">Descrizione e note (facoltative)</string>
     <string name="placeholder_item_description">es. Controllare a freddo: il livello deve essere tra min e max</string>
-    <string name="label_item_tag">Tag / Categoria (facoltativo)</string>
-    <string name="placeholder_item_tag">es. Documenti, sicurezza, cucina</string>
-    <string name="label_existing_tags">Tag esistenti:</string>
+    <string name="label_item_tag">Tag</string>
+    <string name="placeholder_item_tag">Aggiungi un tag</string>
+    <string name="label_existing_tags">Tag disponibili:</string>
+    <string name="selected_tags_label">Tag selezionati:</string>
+    <string name="add_tag_desc">Aggiungi tag</string>
+    <string name="choose_tag_color_desc">Scegli il colore per %1$s</string>
+    <string name="choose_tag_color_title">Colore per #%1$s</string>
     <string name="label_attached_photo">Foto allegata</string>
     <string name="btn_camera">Fotocamera</string>
     <string name="btn_gallery">Galleria</string>

@@ -9,8 +9,9 @@ carry the details that make it useful.
 ## What you can do
 
 - Create and manage checklists with a title, description, and themed icon.
-- Add checklist items with descriptions, tags, completion state, and a photo
-  from the camera or gallery.
+- Add checklist items with descriptions, multiple tags, completion state, and a
+  photo from the camera or gallery. Choose a coordinated preset color for each
+  tag; tag colors are shared across the app and included in Drive sync.
 - Set an optional due date and time for each item and receive a notification
   when it is due. Notifications are scheduled locally and only sent for
   incomplete items; Android notification permission is requested when needed.

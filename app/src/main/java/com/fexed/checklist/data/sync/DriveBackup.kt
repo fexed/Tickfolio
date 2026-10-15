@@ -3,13 +3,15 @@ package com.fexed.checklist.data.sync
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.SyncTombstone
+import com.fexed.checklist.data.preferences.TagColorRecord
 
 data class DriveBackup(
     val formatVersion: Int = FORMAT_VERSION,
     val exportedAt: Long = System.currentTimeMillis(),
     val checklists: List<ChecklistRecord> = emptyList(),
     val items: List<ItemRecord> = emptyList(),
-    val tombstones: List<SyncTombstone> = emptyList()
+    val tombstones: List<SyncTombstone> = emptyList(),
+    val tagColors: Map<String, TagColorRecord>? = null
 ) {
     companion object {
         const val FORMAT_VERSION = 1
@@ -65,6 +67,7 @@ data class ItemRecord(
     val title: String,
     val description: String,
     val tag: String,
+    val tags: List<String>? = null,
     val imageFileName: String?,
     val isCompleted: Boolean,
     val requiredChecks: Int,
@@ -80,7 +83,8 @@ data class ItemRecord(
             updatedAt = item.updatedAt,
             title = item.title,
             description = item.description,
-            tag = item.tag,
+            tag = item.tags.firstOrNull().orEmpty(),
+            tags = item.tags,
             imageFileName = item.imageUri?.let { "images/${item.syncId}.jpg" },
             isCompleted = item.isCompleted,
             requiredChecks = item.requiredChecks,

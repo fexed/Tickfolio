@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,25 +24,20 @@ fun TagChip(
     tag: String,
     modifier: Modifier = Modifier,
     isSelected: Boolean = false,
+    colorArgb: Int? = null,
     onClick: (() -> Unit)? = null
 ) {
-    val backgroundColor = if (isSelected) {
+    val tagColor = colorArgb?.let(::Color)
+    val backgroundColor = tagColor ?: if (isSelected) {
         MaterialTheme.colorScheme.primaryContainer
     } else {
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
     }
-
-    val contentColor = if (isSelected) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-
-    val borderColor = if (isSelected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-    } else {
-        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-    }
+    val contentColor = tagColor?.let {
+        if (it.luminance() > 0.42f) Color(0xFF211B16) else Color.White
+    } ?: if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.65f)
+    else tagColor ?: MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
 
     Box(
         modifier = modifier

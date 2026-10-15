@@ -1,6 +1,7 @@
 package com.fexed.checklist.data.sync
 
 import com.fexed.checklist.data.model.SyncTombstone
+import com.fexed.checklist.data.preferences.TagColorRecord
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -74,6 +75,25 @@ class DriveBackupMergerTest {
         assertTrue(merged.items.isEmpty())
     }
 
+    @Test
+    fun mergeKeepsMultipleTagsAndNewestUniqueTagColors() {
+        val local = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 1)),
+            items = listOf(item("item", updatedAt = 5, tags = listOf("Travel", "Essentials"))),
+            tagColors = mapOf("travel" to TagColorRecord(0xFF123456.toInt(), 10))
+        )
+        val remote = DriveBackup(
+            checklists = listOf(checklist("list", updatedAt = 1)),
+            items = listOf(item("item", updatedAt = 4, tags = listOf("Old"))),
+            tagColors = mapOf("Travel" to TagColorRecord(0xFF654321.toInt(), 20))
+        )
+
+        val merged = DriveBackupMerger.merge(local, remote)
+
+        assertEquals(listOf("Travel", "Essentials"), merged.items.single().tags)
+        assertEquals(0xFF654321.toInt(), merged.tagColors?.get("travel")?.colorArgb)
+    }
+
     private fun checklist(
         syncId: String,
         updatedAt: Long,
@@ -103,7 +123,8 @@ class DriveBackupMergerTest {
         checklistSyncId: String = "list",
         updatedAt: Long,
         title: String = "Item",
-        dueAt: Long? = null
+        dueAt: Long? = null,
+        tags: List<String>? = null
     ) = ItemRecord(
         syncId = syncId,
         checklistSyncId = checklistSyncId,
@@ -111,6 +132,7 @@ class DriveBackupMergerTest {
         title = title,
         description = "",
         tag = "",
+        tags = tags,
         imageFileName = null,
         isCompleted = false,
         requiredChecks = 1,

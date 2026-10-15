@@ -9,6 +9,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,17 +59,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.R
 import coil.compose.AsyncImage
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
 import java.io.File
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun ChecklistItemCard(
     item: ChecklistItem,
     onProgressChange: (Int) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onViewImage: (String) -> Unit,
+    tagColors: Map<String, TagColorRecord> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -235,9 +240,19 @@ fun ChecklistItemCard(
                     }
                 }
 
-                if (item.tag.isNotBlank()) {
+                if (item.tags.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    TagChip(tag = item.tag)
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        item.tags.forEach { tag ->
+                            TagChip(
+                                tag = tag,
+                                colorArgb = tagColorFor(tag, tagColors)
+                            )
+                        }
+                    }
                 }
 
                 if (item.requiredChecks > 1) {
@@ -371,7 +386,7 @@ private fun ChecklistItemCardPreview() {
                 checklistId = 1,
                 title = "Check Engine Oil Level",
                 description = "Warm up engine, wipe dipstick, ensure level is between min and max",
-                tag = "Engine",
+                tags = listOf("Engine"),
                 isCompleted = false
             ),
             onProgressChange = {},
@@ -393,7 +408,7 @@ private fun ChecklistItemCardCompletedPreview() {
                 checklistId = 1,
                 title = "Passport & International ID",
                 description = "Kept in front pocket of backpack",
-                tag = "Documents",
+                tags = listOf("Documents"),
                 isCompleted = true
             ),
             onProgressChange = {},

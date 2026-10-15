@@ -27,7 +27,8 @@ data class ChecklistItem(
     val checklistId: Long,
     val title: String,
     val description: String = "",
-    val tag: String = "",
+    @ColumnInfo(name = "tag")
+    val tags: List<String> = emptyList(),
     val imageUri: String? = null,
     val isCompleted: Boolean = false,
     @ColumnInfo(defaultValue = "1")

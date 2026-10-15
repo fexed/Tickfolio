@@ -8,10 +8,18 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.fexed.checklist.data.model.tagKey
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "checklist_settings")
+
+data class TagColorRecord(
+    val colorArgb: Int,
+    val updatedAt: Long
+)
 
 enum class StartPageOption(val label: String, val description: String) {
     ALL_CHECKLISTS("All Checklists", "Always show the full list of checklists on launch"),
@@ -42,7 +50,8 @@ data class UserPreferences(
     val lastDriveSyncAt: Long? = null,
     val driveSyncError: String? = null,
     val checklistSortOption: ChecklistSortOption = ChecklistSortOption.LAST_OPENED,
-    val checklistSortAscending: Boolean = false
+    val checklistSortAscending: Boolean = false,
+    val tagColors: Map<String, TagColorRecord> = emptyMap()
 )
 
 class AppPreferences(private val context: Context) {
@@ -58,7 +67,10 @@ class AppPreferences(private val context: Context) {
         val KEY_DRIVE_SYNC_ERROR = stringPreferencesKey("drive_sync_error")
         val KEY_CHECKLIST_SORT_OPTION = stringPreferencesKey("checklist_sort_option")
         val KEY_CHECKLIST_SORT_ASCENDING = booleanPreferencesKey("checklist_sort_ascending")
+        val KEY_TAG_COLORS = stringPreferencesKey("tag_colors")
     }
+    private val gson = Gson()
+    private val tagColorsType = object : TypeToken<Map<String, TagColorRecord>>() {}.type
 
     val userPreferencesFlow: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
         val startPageName = prefs[KEY_START_PAGE] ?: StartPageOption.ALL_CHECKLISTS.name
@@ -94,7 +106,10 @@ class AppPreferences(private val context: Context) {
             lastDriveSyncAt = prefs[KEY_LAST_DRIVE_SYNC_AT],
             driveSyncError = prefs[KEY_DRIVE_SYNC_ERROR],
             checklistSortOption = checklistSortOption,
-            checklistSortAscending = prefs[KEY_CHECKLIST_SORT_ASCENDING] ?: false
+            checklistSortAscending = prefs[KEY_CHECKLIST_SORT_ASCENDING] ?: false,
+            tagColors = prefs[KEY_TAG_COLORS]?.let {
+                gson.fromJson<Map<String, TagColorRecord>>(it, tagColorsType).orEmpty()
+            }.orEmpty()
         )
     }
 
@@ -119,6 +134,42 @@ class AppPreferences(private val context: Context) {
     suspend fun setChecklistSortAscending(ascending: Boolean) {
         context.dataStore.edit { prefs ->
             prefs[KEY_CHECKLIST_SORT_ASCENDING] = ascending
+        }
+    }
+
+    suspend fun setTagColor(tag: String, colorArgb: Int) {
+        val key = tagKey(tag)
+        require(key.isNotEmpty()) { "Tag must not be blank" }
+        context.dataStore.edit { prefs ->
+            val colors = prefs[KEY_TAG_COLORS]
+                ?.let { gson.fromJson<Map<String, TagColorRecord>>(it, tagColorsType).orEmpty() }
+                .orEmpty()
+                .toMutableMap()
+            val now = System.currentTimeMillis()
+            colors[key] = TagColorRecord(
+                colorArgb = colorArgb,
+                updatedAt = maxOf(now, (colors[key]?.updatedAt ?: 0L) + 1)
+            )
+            prefs[KEY_TAG_COLORS] = gson.toJson(colors)
+        }
+    }
+
+    suspend fun setTagColors(tagColors: Map<String, TagColorRecord>) {
+        val normalizedTagColors = tagColors.mapKeys { tagKey(it.key) }
+        context.dataStore.edit { prefs ->
+            val localColors = prefs[KEY_TAG_COLORS]
+                ?.let { gson.fromJson<Map<String, TagColorRecord>>(it, tagColorsType).orEmpty() }
+                .orEmpty()
+            val mergedColors = (localColors.keys + normalizedTagColors.keys).associateWith { key ->
+                val local = localColors[key]
+                val incoming = normalizedTagColors[key]
+                if (incoming != null && (local == null || incoming.updatedAt > local.updatedAt)) {
+                    incoming
+                } else {
+                    local ?: incoming!!
+                }
+            }
+            prefs[KEY_TAG_COLORS] = gson.toJson(mergedColors)
         }
     }
 

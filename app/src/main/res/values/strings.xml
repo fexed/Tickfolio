@@ -129,9 +129,13 @@
     <string name="placeholder_item_title">e.g. Passport, Engine Oil, Clean Stove</string>
     <string name="label_item_description">Description &amp; Notes (optional)</string>
     <string name="placeholder_item_description">e.g. Check cold, level should be between min/max</string>
-    <string name="label_item_tag">Tag / Category (optional)</string>
-    <string name="placeholder_item_tag">e.g. Documents, Safety, Kitchen</string>
-    <string name="label_existing_tags">Existing tags:</string>
+    <string name="label_item_tag">Tags</string>
+    <string name="placeholder_item_tag">Add a tag</string>
+    <string name="label_existing_tags">Available tags:</string>
+    <string name="selected_tags_label">Selected tags:</string>
+    <string name="add_tag_desc">Add tag</string>
+    <string name="choose_tag_color_desc">Choose color for %1$s</string>
+    <string name="choose_tag_color_title">Color for #%1$s</string>
     <string name="label_attached_photo">Attached Photo</string>
     <string name="btn_camera">Camera</string>
     <string name="btn_gallery">Gallery</string>

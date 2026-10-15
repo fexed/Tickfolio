@@ -57,7 +57,7 @@ class SampleDataProviderTest {
             assertEquals(template.items.indices.toList(), template.items.map { it.position })
             template.items.forEach { item ->
                 assertTrue(item.title.isNotBlank())
-                assertTrue(item.tag.isNotBlank())
+                assertTrue(item.tags.isNotEmpty())
                 assertFalse(item.isCompleted)
                 assertEquals(0, item.completedChecks)
                 assertTrue(item.requiredChecks >= 1)

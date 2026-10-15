@@ -1,6 +1,8 @@
 package com.fexed.checklist.data.sync
 
 import com.fexed.checklist.data.model.SyncTombstone
+import com.fexed.checklist.data.model.tagKey
+import com.fexed.checklist.data.preferences.TagColorRecord
 
 object DriveBackupMerger {
 
@@ -42,8 +44,24 @@ object DriveBackupMerger {
             exportedAt = maxOf(local.exportedAt, remote.exportedAt),
             checklists = winningChecklists,
             items = winningItems,
-            tombstones = retainedTombstones
+            tombstones = retainedTombstones,
+            tagColors = mergeTagColors(local.tagColors.orEmpty(), remote.tagColors.orEmpty())
         )
+    }
+
+    private fun mergeTagColors(
+        local: Map<String, TagColorRecord>,
+        remote: Map<String, TagColorRecord>
+    ): Map<String, TagColorRecord> {
+        val merged = mutableMapOf<String, TagColorRecord>()
+        (local.entries + remote.entries).forEach { (tag, color) ->
+            val key = tagKey(tag)
+            val current = merged[key]
+            if (key.isNotEmpty() && (current == null || color.updatedAt > current.updatedAt)) {
+                merged[key] = color
+            }
+        }
+        return merged
     }
 
     private fun <T> mergeRecords(

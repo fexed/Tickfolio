@@ -26,42 +26,42 @@ object SampleDataProvider {
                     checklistId = tripId,
                     title = "Passport & ID",
                     description = "Keep in front pocket of backpack for security check",
-                    tag = "Documents",
+                    tags = listOf("Documents"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = tripId,
                     title = "Work Laptop & Charger",
                     description = "USB-C 100W brick plus European wall adapter",
-                    tag = "Tech",
+                    tags = listOf("Tech"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = tripId,
                     title = "Noise-cancelling headphones",
                     description = "Charge battery to 100% tonight",
-                    tag = "Tech",
+                    tags = listOf("Tech"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = tripId,
                     title = "Presentation clicker / pointer",
                     description = "Spare AAA battery in side pouch",
-                    tag = "Work",
+                    tags = listOf("Work"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = tripId,
                     title = "Business casual shirts (3)",
                     description = "Ironed and placed in garment sleeve",
-                    tag = "Clothing",
+                    tags = listOf("Clothing"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = tripId,
                     title = "Toiletry bag (<100ml liquids)",
                     description = "Clear zip bag ready for airport TSA inspection",
-                    tag = "Personal",
+                    tags = listOf("Personal"),
                     isCompleted = false
                 )
             )
@@ -83,35 +83,35 @@ object SampleDataProvider {
                     checklistId = carId,
                     title = "Check Engine Oil Level",
                     description = "Warm up engine, wipe dipstick, ensure level is between min and max",
-                    tag = "Engine",
+                    tags = listOf("Engine"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = carId,
                     title = "Tire Pressure & Tread Depth",
                     description = "2.3 bar front, 2.5 bar rear (check cold). Check spare tire too!",
-                    tag = "Wheels",
+                    tags = listOf("Wheels"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = carId,
                     title = "Top up Windshield Washer Fluid",
                     description = "Use winter-rated bug wash mix",
-                    tag = "Fluids",
+                    tags = listOf("Fluids"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = carId,
                     title = "Brake Pads & Fluid",
                     description = "Inspect reservoir level through transparent container",
-                    tag = "Safety",
+                    tags = listOf("Safety"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = carId,
                     title = "Emergency Kit & First Aid",
                     description = "Reflective triangle, high-vis vests (2), torch, first aid kit expiration check",
-                    tag = "Safety",
+                    tags = listOf("Safety"),
                     isCompleted = false
                 )
             )
@@ -133,35 +133,35 @@ object SampleDataProvider {
                     checklistId = homeId,
                     title = "Kitchen: Clean stove and oven",
                     description = "Soak burner grates and wipe down grease splashes",
-                    tag = "Kitchen",
+                    tags = listOf("Kitchen"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = homeId,
                     title = "Living Room: Dust bookshelves & TV unit",
                     description = "Use microfiber cloth with anti-static spray",
-                    tag = "Living Room",
+                    tags = listOf("Living Room"),
                     isCompleted = true
                 ),
                 ChecklistItem(
                     checklistId = homeId,
                     title = "Bathroom: Descale shower head & polish tiles",
                     description = "Leave descaler on for 15 mins then rinse",
-                    tag = "Bathroom",
+                    tags = listOf("Bathroom"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = homeId,
                     title = "Bedroom: Wash bed linens & flip mattress",
                     description = "60°C wash cycle for sheets and pillowcases",
-                    tag = "Bedroom",
+                    tags = listOf("Bedroom"),
                     isCompleted = false
                 ),
                 ChecklistItem(
                     checklistId = homeId,
                     title = "All Rooms: Vacuum & Mop floors",
                     description = "Wood cleaner for parquet, warm soapy water for tiles",
-                    tag = "General",
+                    tags = listOf("General"),
                     isCompleted = false
                 )
             )
@@ -310,7 +310,7 @@ object SampleDataProvider {
             ChecklistItem(
                 checklistId = 0,
                 title = itemTitle,
-                tag = tag,
+                tags = listOf(tag),
                 isCompleted = false,
                 requiredChecks = multiCheckCounts[itemTitle] ?: 1,
                 completedChecks = 0,

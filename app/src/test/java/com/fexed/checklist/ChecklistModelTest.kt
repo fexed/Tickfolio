@@ -22,10 +22,10 @@ class ChecklistModelTest {
             iconName = "trip"
         )
         val items = listOf(
-            ChecklistItem(id = 1, checklistId = 1, title = "Passport", tag = "Docs", isCompleted = true),
-            ChecklistItem(id = 2, checklistId = 1, title = "Tickets", tag = "Docs", isCompleted = true),
-            ChecklistItem(id = 3, checklistId = 1, title = "Laptop", tag = "Tech", isCompleted = false),
-            ChecklistItem(id = 4, checklistId = 1, title = "Clothes", tag = "Personal", isCompleted = false)
+            ChecklistItem(id = 1, checklistId = 1, title = "Passport", tags = listOf("Docs"), isCompleted = true),
+            ChecklistItem(id = 2, checklistId = 1, title = "Tickets", tags = listOf("Docs"), isCompleted = true),
+            ChecklistItem(id = 3, checklistId = 1, title = "Laptop", tags = listOf("Tech"), isCompleted = false),
+            ChecklistItem(id = 4, checklistId = 1, title = "Clothes", tags = listOf("Personal"), isCompleted = false)
         )
 
         val checklistWithItems = ChecklistWithItems(checklist = checklist, items = items)
@@ -34,6 +34,29 @@ class ChecklistModelTest {
         assertEquals(2, checklistWithItems.completedCount)
         assertEquals(0.5f, checklistWithItems.progress, 0.001f)
         assertEquals(listOf("Docs", "Personal", "Tech"), checklistWithItems.tags)
+    }
+
+    @Test
+    fun checklistWithItems_collectsMultipleTagsWithoutDuplicates() {
+        val items = listOf(
+            ChecklistItem(
+                id = 1,
+                checklistId = 1,
+                title = "Pack phone",
+                tags = listOf("Electronics", "Travel")
+            ),
+            ChecklistItem(
+                id = 2,
+                checklistId = 1,
+                title = "Pack charger",
+                tags = listOf("electronics", "Essentials")
+            )
+        )
+
+        assertEquals(
+            listOf("Electronics", "Essentials", "Travel"),
+            ChecklistWithItems(Checklist(id = 1, title = "Trip"), items).tags
+        )
     }
 
     @Test
@@ -73,15 +96,26 @@ class ChecklistModelTest {
     fun detailUiState_filterByTagAndQuery() {
         val checklist = Checklist(id = 1, title = "Apartment Cleaning")
         val items = listOf(
-            ChecklistItem(id = 1, checklistId = 1, title = "Clean stove", tag = "Kitchen", isCompleted = false),
-            ChecklistItem(id = 2, checklistId = 1, title = "Mop kitchen floor", tag = "Kitchen", isCompleted = true),
-            ChecklistItem(id = 3, checklistId = 1, title = "Dust living room", tag = "Living Room", isCompleted = false)
+            ChecklistItem(
+                id = 1,
+                checklistId = 1,
+                title = "Clean stove",
+                tags = listOf("Kitchen", "Weekly"),
+                isCompleted = false
+            ),
+            ChecklistItem(id = 2, checklistId = 1, title = "Mop kitchen floor", tags = listOf("Kitchen"), isCompleted = true),
+            ChecklistItem(id = 3, checklistId = 1, title = "Dust living room", tags = listOf("Living Room"), isCompleted = false)
         )
         val cwi = ChecklistWithItems(checklist, items)
 
         // Filter by Tag "Kitchen"
         val stateTagOnly = DetailUiState(checklistWithItems = cwi, selectedTag = "Kitchen")
         assertEquals(2, stateTagOnly.filteredItems.size)
+        assertEquals(
+            listOf("Clean stove"),
+            DetailUiState(checklistWithItems = cwi, selectedTag = "Weekly")
+                .filteredItems.map { it.title }
+        )
 
         // Filter by hideCompleted
         val stateHideCompleted = DetailUiState(checklistWithItems = cwi, selectedTag = "Kitchen", hideCompleted = true)
