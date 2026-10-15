@@ -63,6 +63,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -196,6 +197,7 @@ fun EditItemBottomSheet(
                 supportingText = if (titleError) {
                     { Text(stringResource(R.string.error_title_required)) }
                 } else null,
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -236,6 +238,7 @@ fun EditItemBottomSheet(
                 onValueChange = { description = it },
                 label = { Text(stringResource(R.string.label_item_description)) },
                 placeholder = { Text(stringResource(R.string.placeholder_item_description)) },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 maxLines = 4,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -253,6 +256,7 @@ fun EditItemBottomSheet(
                 onValueChange = { tag = it },
                 label = { Text(stringResource(R.string.label_item_tag)) },
                 placeholder = { Text(stringResource(R.string.placeholder_item_tag)) },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
