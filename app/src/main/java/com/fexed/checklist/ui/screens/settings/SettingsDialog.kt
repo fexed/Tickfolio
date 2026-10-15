@@ -63,6 +63,7 @@ fun SettingsDialog(
     userPreferences: UserPreferences,
     onSetStartPage: (StartPageOption) -> Unit,
     onSetThemeMode: (ThemeMode) -> Unit,
+    onSetHandwritingFontEnabled: (Boolean) -> Unit,
     onSetDriveFolderName: (String) -> Unit,
     onToggleDriveBackup: (Boolean) -> Unit,
     onReconnectDrive: () -> Unit,
@@ -172,6 +173,37 @@ fun SettingsDialog(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            onSetHandwritingFontEnabled(!userPreferences.handwritingFontEnabled)
+                        }
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.handwriting_font_title),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.handwriting_font_description),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = userPreferences.handwritingFontEnabled,
+                        onCheckedChange = onSetHandwritingFontEnabled,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -342,6 +374,7 @@ private fun SettingsDialogPreview() {
             ),
             onSetStartPage = {},
             onSetThemeMode = {},
+            onSetHandwritingFontEnabled = {},
             onSetDriveFolderName = {},
             onToggleDriveBackup = {},
             onReconnectDrive = {},

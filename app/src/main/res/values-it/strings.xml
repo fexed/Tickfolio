@@ -187,6 +187,8 @@
     <string name="theme_system">Predefinito di sistema</string>
     <string name="theme_light">Carta chiara</string>
     <string name="theme_dark">Pergamena scura</string>
+    <string name="handwriting_font_title">Carattere stile manoscritto</string>
+    <string name="handwriting_font_description">Usa un carattere più simile alla scrittura a mano in tutta l’app.</string>
 
     <!-- Notifiche e promemoria in background -->
     <string name="channel_alarm_name">Promemoria programmati delle checklist</string>

@@ -69,7 +69,10 @@ class SingleChecklistWidgetConfigActivity : ComponentActivity() {
             val userPreferences by app.repository.userPreferences.collectAsState(initial = null)
             val scope = rememberCoroutineScope()
 
-            ChecklistTheme(themeMode = userPreferences?.themeMode ?: ThemeMode.SYSTEM) {
+            ChecklistTheme(
+                themeMode = userPreferences?.themeMode ?: ThemeMode.SYSTEM,
+                handwritingFontEnabled = userPreferences?.handwritingFontEnabled ?: false
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

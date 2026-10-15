@@ -44,6 +44,7 @@ data class UserPreferences(
     val startPage: StartPageOption,
     val themeMode: ThemeMode,
     val lastOpenedChecklistId: Long?,
+    val handwritingFontEnabled: Boolean = false,
     val driveBackupEnabled: Boolean = false,
     val driveConsentAsked: Boolean = false,
     val driveFolderName: String = "Tickfolio",
@@ -59,6 +60,7 @@ class AppPreferences(private val context: Context) {
     companion object {
         val KEY_START_PAGE = stringPreferencesKey("start_page")
         val KEY_THEME_MODE = stringPreferencesKey("theme_mode")
+        val KEY_HANDWRITING_FONT_ENABLED = booleanPreferencesKey("handwriting_font_enabled")
         val KEY_LAST_OPENED_ID = longPreferencesKey("last_opened_id")
         val KEY_DRIVE_BACKUP_ENABLED = booleanPreferencesKey("drive_backup_enabled")
         val KEY_DRIVE_CONSENT_ASKED = booleanPreferencesKey("drive_consent_asked")
@@ -100,6 +102,7 @@ class AppPreferences(private val context: Context) {
             startPage = startPage,
             themeMode = themeMode,
             lastOpenedChecklistId = lastOpenedId,
+            handwritingFontEnabled = prefs[KEY_HANDWRITING_FONT_ENABLED] ?: false,
             driveBackupEnabled = prefs[KEY_DRIVE_BACKUP_ENABLED] ?: false,
             driveConsentAsked = prefs[KEY_DRIVE_CONSENT_ASKED] ?: false,
             driveFolderName = prefs[KEY_DRIVE_FOLDER_NAME] ?: "Tickfolio",
@@ -122,6 +125,12 @@ class AppPreferences(private val context: Context) {
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { prefs ->
             prefs[KEY_THEME_MODE] = mode.name
+        }
+    }
+
+    suspend fun setHandwritingFontEnabled(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_HANDWRITING_FONT_ENABLED] = enabled
         }
     }
 

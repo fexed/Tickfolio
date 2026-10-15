@@ -166,6 +166,12 @@ class OverviewViewModel(
         }
     }
 
+    fun setHandwritingFontEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setHandwritingFontEnabled(enabled)
+        }
+    }
+
     fun setDriveFolderName(name: String) {
         viewModelScope.launch {
             repository.setDriveFolderName(name)

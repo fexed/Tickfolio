@@ -5,6 +5,7 @@ import com.fexed.checklist.data.model.ChecklistItem
 import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
+import com.fexed.checklist.data.preferences.UserPreferences
 import com.fexed.checklist.ui.screens.detail.DetailUiState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -150,6 +151,13 @@ class ChecklistModelTest {
         assertEquals("Latest Opened", StartPageOption.LATEST_OPENED.label)
         assertEquals("Paper Light", ThemeMode.LIGHT.label)
         assertEquals("Parchment Dark", ThemeMode.DARK.label)
+        assertFalse(
+            UserPreferences(
+                startPage = StartPageOption.ALL_CHECKLISTS,
+                themeMode = ThemeMode.SYSTEM,
+                lastOpenedChecklistId = null
+            ).handwritingFontEnabled
+        )
     }
 
     @Test

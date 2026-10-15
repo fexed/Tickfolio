@@ -581,6 +581,7 @@ fun OverviewScreen(
             userPreferences = uiState.userPreferences,
             onSetStartPage = { viewModel.setStartPage(it) },
             onSetThemeMode = { viewModel.setThemeMode(it) },
+            onSetHandwritingFontEnabled = { viewModel.setHandwritingFontEnabled(it) },
             onSetDriveFolderName = { viewModel.setDriveFolderName(it) },
             onToggleDriveBackup = onToggleDriveBackup,
             onReconnectDrive = onReconnectDrive,

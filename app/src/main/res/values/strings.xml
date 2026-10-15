@@ -187,6 +187,8 @@
     <string name="theme_system">System Default</string>
     <string name="theme_light">Paper Light</string>
     <string name="theme_dark">Parchment Dark</string>
+    <string name="handwriting_font_title">Handwritten-style font</string>
+    <string name="handwriting_font_description">Use a more handwritten font throughout the app.</string>
 
     <!-- Notifications & Background Reminders -->
     <string name="channel_alarm_name">Checklist Scheduled Reminders</string>

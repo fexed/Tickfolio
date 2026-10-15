@@ -65,6 +65,7 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun ChecklistTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
+    handwritingFontEnabled: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val darkTheme = when (themeMode) {
@@ -91,7 +92,7 @@ fun ChecklistTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = if (handwritingFontEnabled) Typography.withHandwritingFont() else Typography,
         content = content
     )
 }

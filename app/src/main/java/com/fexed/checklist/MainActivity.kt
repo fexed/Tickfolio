@@ -81,7 +81,10 @@ class MainActivity : ComponentActivity() {
             val themeMode = currentUserPrefs?.themeMode ?: ThemeMode.SYSTEM
             val coroutineScope = rememberCoroutineScope()
 
-            ChecklistTheme(themeMode = themeMode) {
+            ChecklistTheme(
+                themeMode = themeMode,
+                handwritingFontEnabled = currentUserPrefs?.handwritingFontEnabled ?: false
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

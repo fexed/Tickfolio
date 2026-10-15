@@ -223,6 +223,10 @@ class ChecklistRepository(
         appPreferences.setThemeMode(mode)
     }
 
+    suspend fun setHandwritingFontEnabled(enabled: Boolean) {
+        appPreferences.setHandwritingFontEnabled(enabled)
+    }
+
     suspend fun setChecklistSortOption(option: ChecklistSortOption) {
         appPreferences.setChecklistSortOption(option)
     }
