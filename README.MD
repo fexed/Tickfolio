@@ -128,6 +128,15 @@ all-checklists widget shows a scrollable list; tap a row to open that checklist.
 The Room database has preserving migrations for schema versions 1 through 5.
 Destructive fallback migration remains enabled for unsupported schema upgrades.
 
+## Android backup and restore
+
+Tickfolio includes checklist data in Android's system-managed backup and device
+transfer: the Room database, app preferences, and attached item photos. Android
+may restore this data after reinstalling the app or transferring to another
+device, provided system backup or device transfer is enabled for the user's
+device and account. This is separate from Tickfolio's optional Google Drive
+integration and does not provide continuous, on-demand synchronization.
+
 ## Google Drive backup setup
 
 Google Drive features are controlled by the `enableGoogleDrive` Gradle
