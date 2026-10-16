@@ -18,7 +18,7 @@ android {
         applicationId = "com.fexed.checklist"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         buildConfigField("boolean", "GOOGLE_DRIVE_ENABLED", enableGoogleDrive.toString())
