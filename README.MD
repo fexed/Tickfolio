@@ -194,8 +194,8 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   │   │   ├── model/          # Checklist and checklist-item entities
 │       │   │   │   ├── preferences/    # DataStore settings
 │       │   │   │   ├── reminder/       # Alarm and geofence notifications
-│   │   │   │   ├── repository/     # Data access boundary
-│   │   │   │   └── sync/           # Drive backup, merge, and worker
+│   │   │   │   ├── repository/         # Data access boundary
+│   │   │   │   └── sync/               # Drive backup, merge, and worker
 │       │   │   ├── widget/             # Glance widgets and checklist picker
 │       │   │   ├── ui/
 │       │   │   │   ├── components/     # Reusable Compose UI and previews
