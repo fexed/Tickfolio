@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
@@ -257,8 +256,9 @@ fun ChecklistItemCard(
 
                 if (item.requiredChecks > 1) {
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.End
                     ) {
                         IconButton(
                             onClick = { onProgressChange(item.completedChecks - 1) },
@@ -280,17 +280,6 @@ fun ChecklistItemCard(
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        IconButton(
-                            onClick = { onProgressChange(item.completedChecks + 1) },
-                            enabled = item.completedChecks < item.requiredChecks,
-                            modifier = Modifier.size(32.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(R.string.increase_item_checks),
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
                     }
                 }
             }
@@ -409,7 +398,8 @@ private fun ChecklistItemCardCompletedPreview() {
                 title = "Passport & International ID",
                 description = "Kept in front pocket of backpack",
                 tags = listOf("Documents"),
-                isCompleted = true
+                requiredChecks = 3,
+                completedChecks = 1
             ),
             onProgressChange = {},
             onEdit = {},
