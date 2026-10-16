@@ -175,6 +175,7 @@
 
     <!-- Finestra delle impostazioni -->
     <string name="settings_title">Preferenze</string>
+    <string name="settings_credits_format">Realizzato da Fexed (v. %1$s)</string>
     <string name="section_launch_screen">Schermata iniziale</string>
     <string name="section_launch_screen_desc">Scegli cosa visualizzare all\'apertura dell\'app</string>
     <string name="section_appearance">Aspetto e colori</string>
