@@ -2,6 +2,7 @@ package com.fexed.checklist
 
 import android.app.Application
 import android.util.Log
+import com.fexed.checklist.BuildConfig
 import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
@@ -35,6 +36,9 @@ class ChecklistApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         RecurringChecklistScheduler.ensureScheduled(this)
+        if (!BuildConfig.GOOGLE_DRIVE_ENABLED) {
+            DriveSyncScheduler.cancel(this)
+        }
         publishWearSnapshot()
         applicationScope.launch {
             database.invalidationTracker
@@ -69,29 +73,31 @@ class ChecklistApplication : Application() {
                     ChecklistWidgetUpdater.updateAll(this@ChecklistApplication)
                 }
         }
-        applicationScope.launch {
-            database.invalidationTracker
-                .createFlow("checklists", "checklist_items", "sync_tombstones")
-                .debounce(2_000)
-                .collect {
-                    val backupEnabled = appPreferences.userPreferencesFlow
-                        .map { it.driveBackupEnabled }
-                        .first()
-                    if (backupEnabled) DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
-                }
-        }
-        applicationScope.launch {
-            appPreferences.userPreferencesFlow
-                .map { Triple(it.driveBackupEnabled, it.driveFolderName, it.tagColors) }
-                .distinctUntilChanged()
-                .collect { (enabled, _, _) ->
-                    if (enabled) {
-                        DriveSyncScheduler.ensureScheduled(this@ChecklistApplication)
-                        DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
-                    } else {
-                        DriveSyncScheduler.cancel(this@ChecklistApplication)
+        if (BuildConfig.GOOGLE_DRIVE_ENABLED) {
+            applicationScope.launch {
+                database.invalidationTracker
+                    .createFlow("checklists", "checklist_items", "sync_tombstones")
+                    .debounce(2_000)
+                    .collect {
+                        val backupEnabled = appPreferences.userPreferencesFlow
+                            .map { it.driveBackupEnabled }
+                            .first()
+                        if (backupEnabled) DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
                     }
-                }
+            }
+            applicationScope.launch {
+                appPreferences.userPreferencesFlow
+                    .map { Triple(it.driveBackupEnabled, it.driveFolderName, it.tagColors) }
+                    .distinctUntilChanged()
+                    .collect { (enabled, _, _) ->
+                        if (enabled) {
+                            DriveSyncScheduler.ensureScheduled(this@ChecklistApplication)
+                            DriveSyncScheduler.enqueueNow(this@ChecklistApplication)
+                        } else {
+                            DriveSyncScheduler.cancel(this@ChecklistApplication)
+                        }
+                    }
+            }
         }
         applicationScope.launch {
             appPreferences.userPreferencesFlow

@@ -130,9 +130,15 @@ Destructive fallback migration remains enabled for unsupported schema upgrades.
 
 ## Google Drive backup setup
 
-Google Drive backup is optional. On first launch, Tickfolio asks whether to
-enable it; the setting can also be changed later in the overview's Settings
-dialog. When enabled, Tickfolio stores a `tickfolio_backup.zip` file inside an
+Google Drive features are controlled by the `enableGoogleDrive` Gradle
+property. They are disabled by default, hiding the first-launch consent dialog
+and Drive controls in Settings, and preventing Drive sync workers from running.
+Enable them for a build with, for example,
+`.\gradlew.bat assembleDebug -PenableGoogleDrive=true`.
+
+When enabled, Google Drive backup is optional. On first launch, Tickfolio asks
+whether to enable it; the setting can also be changed later in the overview's
+Settings dialog. Tickfolio stores a `tickfolio_backup.zip` file inside an
 app-managed folder directly under **My Drive**. The folder name defaults to
 `Tickfolio` and can be changed in Settings. Checklist photos are included.
 Tickfolio requests the narrow `drive.file` permission and only reads or

@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
+import com.fexed.checklist.BuildConfig
 import com.fexed.checklist.R
 import com.fexed.checklist.data.sync.DRIVE_FILE_SCOPE
 import com.fexed.checklist.data.sync.DriveSyncScheduler
@@ -97,22 +98,27 @@ class MainActivity : ComponentActivity() {
                         userPreferences = currentUserPrefs,
                         initialChecklistId = openChecklistId,
                         onToggleDriveBackup = { enabled ->
-                            if (enabled) {
-                                coroutineScope.launch {
-                                    app.appPreferences.setDriveConsentAsked()
-                                }
-                                requestDriveAuthorization()
-                            } else {
-                                coroutineScope.launch {
-                                    app.appPreferences.setDriveBackupEnabled(false)
+                            if (BuildConfig.GOOGLE_DRIVE_ENABLED) {
+                                if (enabled) {
+                                    coroutineScope.launch {
+                                        app.appPreferences.setDriveConsentAsked()
+                                    }
+                                    requestDriveAuthorization()
+                                } else {
+                                    coroutineScope.launch {
+                                        app.appPreferences.setDriveBackupEnabled(false)
+                                    }
                                 }
                             }
                         },
-                        onReconnectDrive = ::requestDriveAuthorization
+                        onReconnectDrive = {
+                            if (BuildConfig.GOOGLE_DRIVE_ENABLED) requestDriveAuthorization()
+                        }
                     )
                 }
 
-                if (currentUserPrefs != null && currentUserPrefs.driveBackupEnabled.not() &&
+                if (BuildConfig.GOOGLE_DRIVE_ENABLED &&
+                    currentUserPrefs != null && currentUserPrefs.driveBackupEnabled.not() &&
                     currentUserPrefs.driveConsentAsked.not()
                 ) {
                     AlertDialog(
@@ -165,6 +171,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestDriveAuthorization() {
+        if (!BuildConfig.GOOGLE_DRIVE_ENABLED) return
         val request = AuthorizationRequest.builder()
             .setRequestedScopes(listOf(Scope(DRIVE_FILE_SCOPE)))
             .build()
@@ -178,6 +185,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun completeDriveAuthorization(result: AuthorizationResult) {
+        if (!BuildConfig.GOOGLE_DRIVE_ENABLED) return
         if (result.hasResolution()) {
             val pendingIntent = result.pendingIntent
             if (pendingIntent == null) {

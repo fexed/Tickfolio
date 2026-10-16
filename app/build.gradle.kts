@@ -4,6 +4,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val enableGoogleDrive = providers.gradleProperty("enableGoogleDrive")
+    .map { it.toBoolean() }
+    .getOrElse(false)
+
 android {
     namespace = "com.fexed.checklist"
     compileSdk {
@@ -16,6 +20,8 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("boolean", "GOOGLE_DRIVE_ENABLED", enableGoogleDrive.toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -34,6 +40,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
+        buildConfig = true
         compose = true
     }
 }

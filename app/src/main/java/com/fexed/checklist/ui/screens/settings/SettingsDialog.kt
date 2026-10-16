@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
+import com.fexed.checklist.BuildConfig
 import com.fexed.checklist.R
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.ThemeMode
@@ -206,93 +207,98 @@ fun SettingsDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                Spacer(modifier = Modifier.height(16.dp))
+                if (BuildConfig.GOOGLE_DRIVE_ENABLED) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Cloud,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.drive_backup_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Cloud,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.drive_backup_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Text(
+                                text = stringResource(R.string.drive_backup_description),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = userPreferences.driveBackupEnabled,
+                            onCheckedChange = onToggleDriveBackup,
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary
+                            )
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = driveFolderName,
+                        onValueChange = {
+                            driveFolderName = it
+                                .filterNot { character -> character == '/' || character == '\\' }
+                                .take(MAX_DRIVE_FOLDER_NAME_LENGTH)
+                        },
+                        label = { Text(stringResource(R.string.drive_folder_name_label)) },
+                        supportingText = { Text(stringResource(R.string.drive_folder_name_description)) },
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    val validFolderName = driveFolderName.trim().isNotEmpty() &&
+                        '/' !in driveFolderName && '\\' !in driveFolderName
+                    if (driveFolderName.trim() != userPreferences.driveFolderName && validFolderName) {
+                        OutlinedButton(
+                            onClick = { onSetDriveFolderName(driveFolderName.trim()) },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(stringResource(R.string.drive_folder_save))
+                        }
+                    }
+                    userPreferences.lastDriveSyncAt?.let { lastSyncAt ->
                         Text(
-                            text = stringResource(R.string.drive_backup_description),
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = stringResource(
+                                R.string.drive_last_sync,
+                                DateFormat.getDateTimeInstance().format(Date(lastSyncAt))
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    Switch(
-                        checked = userPreferences.driveBackupEnabled,
-                        onCheckedChange = onToggleDriveBackup,
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                    userPreferences.driveSyncError?.let { error ->
+                        val message = if (error == AUTHORIZATION_REQUIRED) {
+                            R.string.drive_sync_authorization_required
+                        } else {
+                            R.string.drive_sync_failed
+                        }
+                        Text(
+                            text = stringResource(message),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
                         )
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
-                    value = driveFolderName,
-                    onValueChange = {
-                        driveFolderName = it
-                            .filterNot { character -> character == '/' || character == '\\' }
-                            .take(MAX_DRIVE_FOLDER_NAME_LENGTH)
-                    },
-                    label = { Text(stringResource(R.string.drive_folder_name_label)) },
-                    supportingText = { Text(stringResource(R.string.drive_folder_name_description)) },
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
-                )
-                val validFolderName = driveFolderName.trim().isNotEmpty() &&
-                    '/' !in driveFolderName && '\\' !in driveFolderName
-                if (driveFolderName.trim() != userPreferences.driveFolderName && validFolderName) {
-                    OutlinedButton(
-                        onClick = { onSetDriveFolderName(driveFolderName.trim()) },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text(stringResource(R.string.drive_folder_save))
-                    }
-                }
-                userPreferences.lastDriveSyncAt?.let { lastSyncAt ->
-                    Text(
-                        text = stringResource(
-                            R.string.drive_last_sync,
-                            DateFormat.getDateTimeInstance().format(Date(lastSyncAt))
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                userPreferences.driveSyncError?.let { error ->
-                    val message = if (error == AUTHORIZATION_REQUIRED) {
-                        R.string.drive_sync_authorization_required
-                    } else {
-                        R.string.drive_sync_failed
-                    }
-                    Text(
-                        text = stringResource(message),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
-                    )
-                    if (error == AUTHORIZATION_REQUIRED && userPreferences.driveBackupEnabled) {
-                        TextButton(onClick = onReconnectDrive) {
-                            Text(stringResource(R.string.drive_reconnect))
+                        if (error == AUTHORIZATION_REQUIRED && userPreferences.driveBackupEnabled) {
+                            TextButton(onClick = onReconnectDrive) {
+                                Text(stringResource(R.string.drive_reconnect))
+                            }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
