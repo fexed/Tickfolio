@@ -13,7 +13,7 @@ import com.fexed.checklist.data.model.SyncTombstone
 
 @Database(
     entities = [Checklist::class, ChecklistItem::class, SyncTombstone::class],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @TypeConverters(TagListConverter::class)
@@ -70,6 +70,15 @@ abstract class ChecklistDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS index_checklist_items_syncId " +
+                        "ON checklist_items(syncId)"
+                )
+            }
+        }
+
         @Volatile
         private var INSTANCE: ChecklistDatabase? = null
 
@@ -80,7 +89,13 @@ abstract class ChecklistDatabase : RoomDatabase() {
                     ChecklistDatabase::class.java,
                     "checklist_database"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5,
+                        MIGRATION_5_6
+                    )
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

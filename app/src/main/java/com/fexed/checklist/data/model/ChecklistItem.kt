@@ -18,7 +18,8 @@ import java.util.UUID
         )
     ],
     indices = [
-        Index("checklistId")
+        Index("checklistId"),
+        Index(value = ["syncId"], unique = true)
     ]
 )
 data class ChecklistItem(

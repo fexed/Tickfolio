@@ -125,7 +125,7 @@ widget prompts you to choose which saved checklist to show; tap a checklist
 item to toggle its completion, or tap the header to open it in the app. The
 all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
-The Room database has preserving migrations for schema versions 1 through 5.
+The Room database has preserving migrations for schema versions 1 through 6.
 Destructive fallback migration remains enabled for unsupported schema upgrades.
 
 ## Android backup and restore
