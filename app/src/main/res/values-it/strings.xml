@@ -209,7 +209,8 @@
     <string name="geofence_permission_warning">Gli avvisi di posizione richiedono l’accesso alla posizione impostato su “Consenti sempre” per funzionare ad app chiusa.</string>
     <string name="geofence_permission_grant">Concedi accesso alla posizione</string>
     <string name="geofence_bg_permission_title">Consenti posizione in background</string>
-    <string name="geofence_bg_permission_text">Per avvisarti quando arrivi vicino a questa posizione anche ad app chiusa, seleziona “%1$s” nella schermata successiva.</string>
+    <string name="geofence_bg_permission_disclosure">Tickfolio usa la posizione in background per rilevare quando arrivi vicino alla posizione salvata per questa checklist e mostrare il promemoria, anche ad app chiusa. La posizione del promemoria viene salvata con la checklist e può essere inclusa nei backup Google Drive se il backup è attivo. La posizione in background viene usata per i promemoria di prossimità, non per la pubblicità. Puoi rifiutare: i promemoria di posizione non si attiveranno mentre Tickfolio è chiusa, ma il resto dell’app rimarrà disponibile.</string>
+    <string name="geofence_bg_permission_text">Per attivare questo promemoria, seleziona “%1$s” nella schermata successiva.</string>
     <string name="geofence_bg_permission_option_fallback">Consenti sempre</string>
     <string name="geofence_bg_permission_continue">Continua</string>
     <string name="recurrence_title">Ripristino ricorrente</string>

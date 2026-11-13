@@ -209,7 +209,8 @@
     <string name="geofence_permission_warning">Location alerts need location access set to “Allow all the time” to work while the app is closed.</string>
     <string name="geofence_permission_grant">Grant location access</string>
     <string name="geofence_bg_permission_title">Allow background location</string>
-    <string name="geofence_bg_permission_text">To notify you when you arrive near this location even when the app is closed, select “%1$s” on the next screen.</string>
+    <string name="geofence_bg_permission_disclosure">Tickfolio uses your location in the background to detect when you arrive near the location saved for this checklist and show its reminder, even when the app is closed. The saved reminder location is stored with the checklist and may be included in Google Drive backups if backup is enabled. Background location is used for proximity reminders, not advertising. You can decline; location reminders will not trigger while Tickfolio is closed, but the rest of the app remains available.</string>
+    <string name="geofence_bg_permission_text">To enable this reminder, select “%1$s” on the next screen.</string>
     <string name="geofence_bg_permission_option_fallback">Allow all the time</string>
     <string name="geofence_bg_permission_continue">Continue</string>
     <string name="recurrence_title">Recurring reset</string>

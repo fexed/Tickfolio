@@ -657,16 +657,19 @@ fun ReminderConfigDialog(
             icon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
             title = { Text(stringResource(R.string.geofence_bg_permission_title)) },
             text = {
-                Text(
-                    stringResource(
-                        R.string.geofence_bg_permission_text,
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                            context.packageManager.backgroundPermissionOptionLabel
-                        } else {
-                            stringResource(R.string.geofence_bg_permission_option_fallback)
-                        }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.geofence_bg_permission_disclosure))
+                    Text(
+                        stringResource(
+                            R.string.geofence_bg_permission_text,
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                                context.packageManager.backgroundPermissionOptionLabel
+                            } else {
+                                stringResource(R.string.geofence_bg_permission_option_fallback)
+                            }
+                        )
                     )
-                )
+                }
             },
             confirmButton = {
                 Button(onClick = {
