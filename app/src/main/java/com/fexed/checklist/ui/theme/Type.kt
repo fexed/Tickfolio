@@ -2,9 +2,15 @@ package com.fexed.checklist.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.fexed.checklist.R
+
+private val HandwritingFontFamily = FontFamily(
+    Font(R.font.patrick_hand_regular, FontWeight.Normal)
+)
 
 val Typography = Typography(
     displayLarge = TextStyle(
@@ -59,22 +65,21 @@ val Typography = Typography(
 )
 
 fun Typography.withHandwritingFont(): Typography {
-    val fontFamily = FontFamily.Cursive
     return copy(
-        displayLarge = displayLarge.copy(fontFamily = fontFamily),
-        displayMedium = displayMedium.copy(fontFamily = fontFamily),
-        displaySmall = displaySmall.copy(fontFamily = fontFamily),
-        headlineLarge = headlineLarge.copy(fontFamily = fontFamily),
-        headlineMedium = headlineMedium.copy(fontFamily = fontFamily),
-        headlineSmall = headlineSmall.copy(fontFamily = fontFamily),
-        titleLarge = titleLarge.copy(fontFamily = fontFamily),
-        titleMedium = titleMedium.copy(fontFamily = fontFamily),
-        titleSmall = titleSmall.copy(fontFamily = fontFamily),
-        bodyLarge = bodyLarge.copy(fontFamily = fontFamily),
-        bodyMedium = bodyMedium.copy(fontFamily = fontFamily),
-        bodySmall = bodySmall.copy(fontFamily = fontFamily),
-        labelLarge = labelLarge.copy(fontFamily = fontFamily),
-        labelMedium = labelMedium.copy(fontFamily = fontFamily),
-        labelSmall = labelSmall.copy(fontFamily = fontFamily)
+        displayLarge = displayLarge.copy(fontFamily = HandwritingFontFamily),
+        displayMedium = displayMedium.copy(fontFamily = HandwritingFontFamily),
+        displaySmall = displaySmall.copy(fontFamily = HandwritingFontFamily),
+        headlineLarge = headlineLarge.copy(fontFamily = HandwritingFontFamily),
+        headlineMedium = headlineMedium.copy(fontFamily = HandwritingFontFamily),
+        headlineSmall = headlineSmall.copy(fontFamily = HandwritingFontFamily),
+        titleLarge = titleLarge.copy(fontFamily = HandwritingFontFamily),
+        titleMedium = titleMedium.copy(fontFamily = HandwritingFontFamily),
+        titleSmall = titleSmall.copy(fontFamily = HandwritingFontFamily),
+        bodyLarge = bodyLarge.copy(fontFamily = HandwritingFontFamily),
+        bodyMedium = bodyMedium.copy(fontFamily = HandwritingFontFamily),
+        bodySmall = bodySmall.copy(fontFamily = HandwritingFontFamily),
+        labelLarge = labelLarge.copy(fontFamily = HandwritingFontFamily),
+        labelMedium = labelMedium.copy(fontFamily = HandwritingFontFamily),
+        labelSmall = labelSmall.copy(fontFamily = HandwritingFontFamily)
     )
 }
