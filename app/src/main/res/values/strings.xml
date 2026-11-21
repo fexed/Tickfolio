@@ -98,6 +98,10 @@
     <string name="item_due_date_label">Due date and time (optional)</string>
     <string name="item_due_date_set">Set due date &amp; time</string>
     <string name="item_due_date_clear">Clear</string>
+    <string name="item_due_recurrence_label">Repeat reminder</string>
+    <string name="item_due_recurrence_description">Repeats at the due time on the selected weekday or monthly date; pauses while complete.</string>
+    <string name="item_due_recurrence_requires_date">Set a due date and time to enable repeating reminders.</string>
+    <string name="item_due_recurrence_summary">Repeats %1$s</string>
     <string name="item_due_date_display">Due %1$s</string>
     <string name="item_due_overdue">Overdue · %1$s</string>
     <string name="more_item_options_desc">More item options</string>
@@ -222,6 +226,14 @@
     <string name="recurrence_month_day">Day %1$d</string>
     <string name="recurrence_reset_time">Reset time: %1$s</string>
     <string name="recurrence_month_end_note">In shorter months, the reset happens on the last day.</string>
+    <string name="recurrence_none">Never</string>
+    <string name="recurring_reminder_title">Recurring reminder</string>
+    <string name="recurring_reminder_description">Remind while this checklist has unchecked items</string>
+    <string name="recurring_reminder_time">Reminder time: %1$s</string>
+    <string name="channel_recurring_reminder_name">Recurring checklist reminders</string>
+    <string name="channel_recurring_reminder_description">Reminders for checklists with items left to complete</string>
+    <string name="recurring_checklist_notification_title">Checklist reminder: %1$s</string>
+    <string name="recurring_checklist_notification_text">This checklist still has items to complete.</string>
     <string name="drive_backup_title">Google Drive backup</string>
     <string name="drive_backup_description">Automatically sync checklist content, progress, and photos. Tickfolio only accesses files it creates.</string>
     <string name="drive_folder_name_label">My Drive folder</string>

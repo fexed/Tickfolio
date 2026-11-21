@@ -596,7 +596,9 @@ fun OverviewScreen(
             checklist = checklist,
             onDismiss = { reminderChecklist = null },
             onSaveReminders = { reminderTime, geofenceLat, geofenceLng, geofenceRadius, geofenceName,
-                                recurrence, recurrenceTimeMinutes, recurrenceDayOfWeek, recurrenceDayOfMonth ->
+                                recurrence, recurrenceTimeMinutes, recurrenceDayOfWeek, recurrenceDayOfMonth,
+                                reminderRecurrence, reminderRecurrenceTimeMinutes,
+                                reminderRecurrenceDayOfWeek, reminderRecurrenceDayOfMonth ->
                 // Update Alarm
                 if (reminderTime != null) {
                     ChecklistAlarmReceiver.scheduleAlarm(
@@ -632,7 +634,11 @@ fun OverviewScreen(
                     recurrence = recurrence,
                     recurrenceTimeMinutes = recurrenceTimeMinutes,
                     recurrenceDayOfWeek = recurrenceDayOfWeek,
-                    recurrenceDayOfMonth = recurrenceDayOfMonth
+                    recurrenceDayOfMonth = recurrenceDayOfMonth,
+                    reminderRecurrence = reminderRecurrence,
+                    reminderRecurrenceTimeMinutes = reminderRecurrenceTimeMinutes,
+                    reminderRecurrenceDayOfWeek = reminderRecurrenceDayOfWeek,
+                    reminderRecurrenceDayOfMonth = reminderRecurrenceDayOfMonth
                 )
                 reminderChecklist = null
             }

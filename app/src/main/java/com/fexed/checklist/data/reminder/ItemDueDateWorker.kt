@@ -17,6 +17,8 @@ import com.fexed.checklist.ChecklistApplication
 import com.fexed.checklist.EXTRA_OPEN_CHECKLIST_ID
 import com.fexed.checklist.MainActivity
 import com.fexed.checklist.R
+import com.fexed.checklist.data.model.ChecklistRecurrence
+import com.fexed.checklist.util.RecurrenceSchedule
 import kotlinx.coroutines.CancellationException
 
 class ItemDueDateWorker(
@@ -33,13 +35,21 @@ class ItemDueDateWorker(
         val app = applicationContext as ChecklistApplication
         val dao = app.database.checklistDao()
         val item = dao.getItemBySyncId(syncId) ?: return Result.success()
-        if (item.dueAt != expectedDueAt || item.isCompleted ||
-            item.dueNotificationSentAt == expectedDueAt
+        val frequency = item.dueRecurrenceFrequency
+            ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+        val isRecurring = frequency != null
+        val expectedOccurrence = if (frequency != null) {
+            ItemDueDateScheduler.nextRecurringOccurrence(item, expectedDueAt - 1L)
+        } else {
+            item.dueAt
+        }
+        if (expectedOccurrence != expectedDueAt || item.isCompleted ||
+            (!isRecurring && item.dueNotificationSentAt == expectedDueAt)
         ) {
             return Result.success()
         }
         if (expectedDueAt > System.currentTimeMillis()) {
-            ItemDueDateScheduler.schedule(applicationContext, syncId, expectedDueAt)
+            ItemDueDateScheduler.scheduleNext(applicationContext, syncId, expectedDueAt)
             return Result.success()
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
@@ -49,7 +59,7 @@ class ItemDueDateWorker(
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             Log.w(TAG, "Notification permission is not granted; item due reminder was not posted")
-            return Result.failure()
+            return if (isRecurring) Result.retry() else Result.failure()
         }
 
         val checklist = dao.getChecklistById(item.checklistId) ?: return Result.success()
@@ -103,7 +113,22 @@ class ItemDueDateWorker(
 
         try {
             manager.notify(notificationId, notification)
-            dao.markDueNotificationSent(syncId, expectedDueAt)
+            if (frequency != null) {
+                val anchor = java.util.Calendar.getInstance().apply {
+                    timeInMillis = item.dueAt!!
+                }
+                val nextOccurrence = RecurrenceSchedule.nextOccurrenceAfter(
+                    previousOccurrence = expectedDueAt,
+                    now = System.currentTimeMillis(),
+                    frequency = frequency,
+                    timeMinutes = anchor.get(java.util.Calendar.HOUR_OF_DAY) * 60 +
+                        anchor.get(java.util.Calendar.MINUTE),
+                    dayOfMonth = anchor.get(java.util.Calendar.DAY_OF_MONTH)
+                )
+                ItemDueDateScheduler.scheduleNext(applicationContext, syncId, nextOccurrence)
+            } else {
+                dao.markDueNotificationSent(syncId, expectedDueAt)
+            }
             return Result.success()
         } catch (exception: CancellationException) {
             throw exception

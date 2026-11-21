@@ -15,6 +15,8 @@ carry the details that make it useful.
 - Set an optional due date and time for each item and receive a notification
   when it is due. Notifications are scheduled locally and only sent for
   incomplete items; Android notification permission is requested when needed.
+- Repeat checklist and item reminders daily, weekly, or monthly. Reminders pause
+  while the checklist or item is complete and resume when it becomes incomplete.
 - Search checklists and filter checklist items by text, tag, or completion.
 - Sort checklists by title, due date, last edit, creation date, or last opened
   time in either ascending or descending order; the chosen sort is remembered.
@@ -22,6 +24,7 @@ carry the details that make it useful.
 - Set date-and-time reminders or location-proximity reminders.
 - Automatically reset checklist items daily, weekly, or monthly, with a chosen
   reset time and (for weekly/monthly schedules) weekday or day of the month.
+  Reset schedules are independent of recurring reminders.
 - Optionally back up and sync checklists, completion progress, and photos with
   Google Drive. Sync is off until enabled and authorized by the user.
 - Choose a geofence location on an interactive map, search for a place, or use
@@ -125,7 +128,7 @@ widget prompts you to choose which saved checklist to show; tap a checklist
 item to toggle its completion, or tap the header to open it in the app. The
 all-checklists widget shows a scrollable list; tap a row to open that checklist.
 
-The Room database has preserving migrations for schema versions 1 through 6.
+The Room database has preserving migrations for schema versions 1 through 7.
 Destructive fallback migration remains enabled for unsupported schema upgrades.
 
 ## Android backup and restore
@@ -139,11 +142,13 @@ integration and does not provide continuous, on-demand synchronization.
 
 ## Google Drive backup setup
 
-Google Drive features are controlled by the `enableGoogleDrive` Gradle
-property. They are disabled by default, hiding the first-launch consent dialog
-and Drive controls in Settings, and preventing Drive sync workers from running.
-Enable them for a build with, for example,
-`.\gradlew.bat assembleDebug -PenableGoogleDrive=true`.
+Google Drive features are controlled per build type and are disabled by
+default. Release builds use the `enableGoogleDrive` Gradle property; debug
+builds use `enableGoogleDriveInDebug`. For example,
+`.\gradlew.bat assembleDebug -PenableGoogleDriveInDebug=true` enables Drive
+features in the debug app only. Keep debug sync disabled unless you are
+intentionally testing it; when enabled, configure a separate Drive folder to
+avoid changing the production backup.
 
 When enabled, Google Drive backup is optional. On first launch, Tickfolio asks
 whether to enable it; the setting can also be changed later in the overview's
@@ -157,11 +162,12 @@ but leaves the existing Drive backup intact.
 To enable Drive access for a build, configure a Google Cloud project, enable
 the Google Drive API, configure its OAuth consent screen, and add an Android
 OAuth client matching the app's `applicationId` and the SHA-1 signing
-certificate used for that build. For a locally installed debug build, this is
-the debug signing certificate; distributed builds need a client matching their
-signing certificate. Run `.\gradlew.bat signingReport` to see the local
-certificate fingerprints. Without this setup, authorization and backup cannot
-complete.
+certificate used for that build. The debug app uses
+`com.fexed.checklist.debug`; release uses `com.fexed.checklist`. For a locally
+installed debug build, use the debug signing certificate; distributed builds
+need a client matching their signing certificate. Run
+`.\gradlew.bat signingReport` to see the local certificate fingerprints.
+Without this setup, authorization and backup cannot complete.
 
 The archive is stored as a ZIP in the user's Drive account; Tickfolio does not
 apply additional client-side encryption. Keep access to the Google account
@@ -193,7 +199,7 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   │   │   ├── local/          # Room database and DAO
 │       │   │   │   ├── model/          # Checklist and checklist-item entities
 │       │   │   │   ├── preferences/    # DataStore settings
-│       │   │   │   ├── reminder/       # Alarm and geofence notifications
+│       │   │   │   ├── reminder/       # Alarm, geofence, and recurring notifications
 │       │   │   │   ├── repository/     # Data access boundary
 │       │   │   │   └── sync/           # Drive backup, merge, and worker
 │       │   │   ├── widget/             # Glance widgets and checklist picker
@@ -240,3 +246,6 @@ Use the Gradle wrapper from the project root:
 
 The debug APK is written to
 `app/build/outputs/apk/debug/app-debug.apk`.
+The Android Studio debug variant is installed as **Tickfolio (Debug)** with
+application ID `com.fexed.checklist.debug`, so it can coexist with the Play
+Store app (`com.fexed.checklist`) and has separate local data.

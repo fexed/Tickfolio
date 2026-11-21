@@ -13,7 +13,7 @@ import com.fexed.checklist.data.model.SyncTombstone
 
 @Database(
     entities = [Checklist::class, ChecklistItem::class, SyncTombstone::class],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(TagListConverter::class)
@@ -79,6 +79,17 @@ abstract class ChecklistDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE checklists ADD COLUMN reminderRecurrenceFrequency TEXT")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN reminderRecurrenceTimeMinutes INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN reminderRecurrenceDayOfWeek INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN reminderRecurrenceDayOfMonth INTEGER")
+                db.execSQL("ALTER TABLE checklists ADD COLUMN reminderRecurrenceNextAt INTEGER")
+                db.execSQL("ALTER TABLE checklist_items ADD COLUMN dueRecurrenceFrequency TEXT")
+            }
+        }
+
         @Volatile
         private var INSTANCE: ChecklistDatabase? = null
 
@@ -94,7 +105,8 @@ abstract class ChecklistDatabase : RoomDatabase() {
                         MIGRATION_2_3,
                         MIGRATION_3_4,
                         MIGRATION_4_5,
-                        MIGRATION_5_6
+                        MIGRATION_5_6,
+                        MIGRATION_6_7
                     )
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()

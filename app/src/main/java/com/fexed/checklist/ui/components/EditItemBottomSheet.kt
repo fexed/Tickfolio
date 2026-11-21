@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +44,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -77,6 +79,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.fexed.checklist.R
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.normalizeTags
 import com.fexed.checklist.data.model.tagKey
 import com.fexed.checklist.data.preferences.TagColorRecord
@@ -102,7 +105,8 @@ fun EditItemBottomSheet(
         tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
-        dueAt: Long?
+        dueAt: Long?,
+        dueRecurrenceFrequency: ChecklistRecurrence?
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -118,6 +122,13 @@ fun EditItemBottomSheet(
     var requiredChecks by remember { mutableStateOf(initialItem?.requiredChecks?.toString() ?: "1") }
     var requiredChecksError by remember { mutableStateOf(false) }
     var dueAt by remember(initialItem?.syncId) { mutableStateOf(initialItem?.dueAt) }
+    var dueRecurrenceFrequency by remember(initialItem?.syncId) {
+        mutableStateOf(
+            ChecklistRecurrence.values().firstOrNull {
+                it.name == initialItem?.dueRecurrenceFrequency
+            }
+        )
+    }
 
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
 
@@ -404,10 +415,61 @@ fun EditItemBottomSheet(
                     )
                 }
                 if (dueAt != null) {
-                    TextButton(onClick = { dueAt = null }) {
+                    TextButton(onClick = {
+                        dueAt = null
+                        dueRecurrenceFrequency = null
+                    }) {
                         Text(stringResource(R.string.item_due_date_clear))
                     }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.item_due_recurrence_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    selected = dueRecurrenceFrequency == null,
+                    onClick = { dueRecurrenceFrequency = null },
+                    label = { Text(stringResource(R.string.recurrence_none)) }
+                )
+                ChecklistRecurrence.values().forEach { frequency ->
+                    FilterChip(
+                        selected = dueRecurrenceFrequency == frequency,
+                        onClick = { dueRecurrenceFrequency = frequency },
+                        enabled = dueAt != null,
+                        label = {
+                            Text(
+                                when (frequency) {
+                                    ChecklistRecurrence.DAILY -> stringResource(R.string.recurrence_daily)
+                                    ChecklistRecurrence.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                                    ChecklistRecurrence.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                                }
+                            )
+                        }
+                    )
+                }
+            }
+            if (dueRecurrenceFrequency != null) {
+                Text(
+                    text = stringResource(R.string.item_due_recurrence_description),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else if (dueAt == null) {
+                Text(
+                    text = stringResource(R.string.item_due_recurrence_requires_date),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -553,7 +615,8 @@ fun EditItemBottomSheet(
                                 normalizeTags(selectedTags + tagInput),
                                 imageUri,
                                 checkCount,
-                                dueAt
+                                dueAt,
+                                dueRecurrenceFrequency
                             )
                         }
                     },
@@ -618,7 +681,7 @@ private fun EditItemBottomSheetPreview() {
             ),
             availableTags = listOf("Essentials", "Documents", "Clothing"),
             onDismiss = {},
-            onConfirm = { _, _, _, _, _, _ -> }
+            onConfirm = { _, _, _, _, _, _, _ -> }
         )
     }
 

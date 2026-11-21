@@ -107,10 +107,20 @@ class ChecklistDetailViewModel(
         tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
-        dueAt: Long?
+        dueAt: Long?,
+        dueRecurrenceFrequency: ChecklistRecurrence?
     ) {
         viewModelScope.launch {
-            repository.addItem(checklistId, title, description, tags, imageUri, requiredChecks, dueAt)
+            repository.addItem(
+                checklistId,
+                title,
+                description,
+                tags,
+                imageUri,
+                requiredChecks,
+                dueAt,
+                dueRecurrenceFrequency
+            )
         }
     }
 
@@ -121,7 +131,8 @@ class ChecklistDetailViewModel(
         tags: List<String>,
         imageUri: String?,
         requiredChecks: Int,
-        dueAt: Long?
+        dueAt: Long?,
+        dueRecurrenceFrequency: ChecklistRecurrence?
     ) {
         viewModelScope.launch {
             val completedChecks = item.completedChecks.coerceIn(0, requiredChecks)
@@ -135,6 +146,7 @@ class ChecklistDetailViewModel(
                     requiredChecks = requiredChecks,
                     completedChecks = completedChecks,
                     dueAt = dueAt,
+                    dueRecurrenceFrequency = dueRecurrenceFrequency?.name,
                     dueNotificationSentAt = if (item.dueAt == dueAt) {
                         item.dueNotificationSentAt
                     } else {
@@ -179,7 +191,11 @@ class ChecklistDetailViewModel(
         recurrence: ChecklistRecurrence?,
         recurrenceTimeMinutes: Int,
         recurrenceDayOfWeek: Int,
-        recurrenceDayOfMonth: Int
+        recurrenceDayOfMonth: Int,
+        reminderRecurrence: ChecklistRecurrence?,
+        reminderRecurrenceTimeMinutes: Int,
+        reminderRecurrenceDayOfWeek: Int,
+        reminderRecurrenceDayOfMonth: Int
     ) {
         viewModelScope.launch {
             repository.updateChecklistReminders(
@@ -192,7 +208,11 @@ class ChecklistDetailViewModel(
                 recurrence = recurrence,
                 recurrenceTimeMinutes = recurrenceTimeMinutes,
                 recurrenceDayOfWeek = recurrenceDayOfWeek,
-                recurrenceDayOfMonth = recurrenceDayOfMonth
+                recurrenceDayOfMonth = recurrenceDayOfMonth,
+                reminderRecurrence = reminderRecurrence,
+                reminderRecurrenceTimeMinutes = reminderRecurrenceTimeMinutes,
+                reminderRecurrenceDayOfWeek = reminderRecurrenceDayOfWeek,
+                reminderRecurrenceDayOfMonth = reminderRecurrenceDayOfMonth
             )
         }
     }

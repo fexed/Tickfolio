@@ -94,20 +94,53 @@ class ChecklistRepository(
         recurrence: ChecklistRecurrence?,
         recurrenceTimeMinutes: Int,
         recurrenceDayOfWeek: Int,
-        recurrenceDayOfMonth: Int
+        recurrenceDayOfMonth: Int,
+        reminderRecurrence: ChecklistRecurrence?,
+        reminderRecurrenceTimeMinutes: Int,
+        reminderRecurrenceDayOfWeek: Int,
+        reminderRecurrenceDayOfMonth: Int
     ) {
         val checklist = checklistDao.getChecklistById(checklistId) ?: return
         val now = System.currentTimeMillis()
         val normalizedTime = recurrenceTimeMinutes.coerceIn(0, 23 * 60 + 59)
         val normalizedDayOfWeek = recurrenceDayOfWeek.coerceIn(Calendar.SUNDAY, Calendar.SATURDAY)
         val normalizedDayOfMonth = recurrenceDayOfMonth.coerceIn(1, 31)
-        val nextRecurrenceAt = recurrence?.let {
+        val recurrenceConfigurationUnchanged =
+            checklist.recurrenceFrequency == recurrence?.name &&
+                checklist.recurrenceTimeMinutes == recurrence?.let { normalizedTime } &&
+                checklist.recurrenceDayOfWeek == recurrence?.let { normalizedDayOfWeek } &&
+                checklist.recurrenceDayOfMonth == recurrence?.let { normalizedDayOfMonth }
+        val nextRecurrenceAt = if (recurrenceConfigurationUnchanged) {
+            checklist.recurrenceNextAt
+        } else recurrence?.let {
             RecurrenceSchedule.firstOccurrenceAfter(
                 now = now,
                 frequency = it,
                 timeMinutes = normalizedTime,
                 dayOfWeek = normalizedDayOfWeek,
                 dayOfMonth = normalizedDayOfMonth
+            )
+        }
+        val normalizedReminderTime = reminderRecurrenceTimeMinutes.coerceIn(0, 23 * 60 + 59)
+        val normalizedReminderDayOfWeek = reminderRecurrenceDayOfWeek.coerceIn(
+            Calendar.SUNDAY,
+            Calendar.SATURDAY
+        )
+        val normalizedReminderDayOfMonth = reminderRecurrenceDayOfMonth.coerceIn(1, 31)
+        val reminderConfigurationUnchanged =
+            checklist.reminderRecurrenceFrequency == reminderRecurrence?.name &&
+                checklist.reminderRecurrenceTimeMinutes == reminderRecurrence?.let { normalizedReminderTime } &&
+                checklist.reminderRecurrenceDayOfWeek == reminderRecurrence?.let { normalizedReminderDayOfWeek } &&
+                checklist.reminderRecurrenceDayOfMonth == reminderRecurrence?.let { normalizedReminderDayOfMonth }
+        val nextReminderRecurrenceAt = if (reminderConfigurationUnchanged) {
+            checklist.reminderRecurrenceNextAt
+        } else reminderRecurrence?.let {
+            RecurrenceSchedule.firstOccurrenceAfter(
+                now = now,
+                frequency = it,
+                timeMinutes = normalizedReminderTime,
+                dayOfWeek = normalizedReminderDayOfWeek,
+                dayOfMonth = normalizedReminderDayOfMonth
             )
         }
 
@@ -123,6 +156,11 @@ class ChecklistRepository(
                 recurrenceDayOfWeek = recurrence?.let { normalizedDayOfWeek },
                 recurrenceDayOfMonth = recurrence?.let { normalizedDayOfMonth },
                 recurrenceNextAt = nextRecurrenceAt,
+                reminderRecurrenceFrequency = reminderRecurrence?.name,
+                reminderRecurrenceTimeMinutes = reminderRecurrence?.let { normalizedReminderTime },
+                reminderRecurrenceDayOfWeek = reminderRecurrence?.let { normalizedReminderDayOfWeek },
+                reminderRecurrenceDayOfMonth = reminderRecurrence?.let { normalizedReminderDayOfMonth },
+                reminderRecurrenceNextAt = nextReminderRecurrenceAt,
                 updatedAt = maxOf(now, checklist.updatedAt + 1)
             )
         )
@@ -167,7 +205,8 @@ class ChecklistRepository(
         tags: List<String> = emptyList(),
         imageUri: String? = null,
         requiredChecks: Int = 1,
-        dueAt: Long? = null
+        dueAt: Long? = null,
+        dueRecurrenceFrequency: ChecklistRecurrence? = null
     ): Long {
         val item = ChecklistItem(
             checklistId = checklistId,
@@ -179,7 +218,8 @@ class ChecklistRepository(
             requiredChecks = requiredChecks.coerceAtLeast(1),
             completedChecks = 0,
             createdAt = System.currentTimeMillis(),
-            dueAt = dueAt
+            dueAt = dueAt,
+            dueRecurrenceFrequency = dueRecurrenceFrequency?.name
         )
         return checklistDao.insertItem(item)
     }

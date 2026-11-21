@@ -98,6 +98,10 @@
     <string name="item_due_date_label">Scadenza (facoltativa)</string>
     <string name="item_due_date_set">Imposta data e ora</string>
     <string name="item_due_date_clear">Cancella</string>
+    <string name="item_due_recurrence_label">Ripeti promemoria</string>
+    <string name="item_due_recurrence_description">Si ripete all’orario di scadenza nel giorno selezionato e si sospende quando l’elemento è completato.</string>
+    <string name="item_due_recurrence_requires_date">Imposta data e ora di scadenza per attivare i promemoria ricorrenti.</string>
+    <string name="item_due_recurrence_summary">Ripeti %1$s</string>
     <string name="item_due_date_display">Scadenza %1$s</string>
     <string name="item_due_overdue">Scaduto · %1$s</string>
     <string name="more_item_options_desc">Altre opzioni per l\'elemento</string>
@@ -222,6 +226,14 @@
     <string name="recurrence_month_day">Giorno %1$d</string>
     <string name="recurrence_reset_time">Orario di ripristino: %1$s</string>
     <string name="recurrence_month_end_note">Nei mesi più brevi, il ripristino avviene l’ultimo giorno.</string>
+    <string name="recurrence_none">Mai</string>
+    <string name="recurring_reminder_title">Promemoria ricorrente</string>
+    <string name="recurring_reminder_description">Ricorda la checklist finché contiene elementi da completare</string>
+    <string name="recurring_reminder_time">Orario promemoria: %1$s</string>
+    <string name="channel_recurring_reminder_name">Promemoria ricorrenti delle checklist</string>
+    <string name="channel_recurring_reminder_description">Promemoria per checklist con elementi da completare</string>
+    <string name="recurring_checklist_notification_title">Promemoria checklist: %1$s</string>
+    <string name="recurring_checklist_notification_text">Questa checklist ha ancora elementi da completare.</string>
     <string name="drive_backup_title">Backup su Google Drive</string>
     <string name="drive_backup_description">Sincronizza automaticamente contenuti, progressi e foto delle checklist. Tickfolio accede solo ai file che crea.</string>
     <string name="drive_folder_name_label">Cartella in Il mio Drive</string>

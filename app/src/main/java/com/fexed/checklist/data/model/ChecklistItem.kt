@@ -45,5 +45,6 @@ data class ChecklistItem(
     @ColumnInfo(defaultValue = "NULL")
     val dueAt: Long? = null,
     @ColumnInfo(defaultValue = "NULL")
-    val dueNotificationSentAt: Long? = null
+    val dueNotificationSentAt: Long? = null,
+    val dueRecurrenceFrequency: String? = null
 )

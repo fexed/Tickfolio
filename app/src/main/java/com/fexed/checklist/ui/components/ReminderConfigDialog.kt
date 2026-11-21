@@ -1,11 +1,13 @@
 package com.fexed.checklist.ui.components
 
 import android.Manifest
-import android.app.DatePickerDialog
-import android.os.Build
 import android.app.TimePickerDialog
+import android.app.DatePickerDialog
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -69,10 +71,10 @@ import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.reminder.GeofenceManager
 import java.text.SimpleDateFormat
+import java.text.DateFormatSymbols
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.text.DateFormatSymbols
 
 import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.data.preferences.ThemeMode
@@ -91,7 +93,11 @@ fun ReminderConfigDialog(
         recurrence: ChecklistRecurrence?,
         recurrenceTimeMinutes: Int,
         recurrenceDayOfWeek: Int,
-        recurrenceDayOfMonth: Int
+        recurrenceDayOfMonth: Int,
+        reminderRecurrence: ChecklistRecurrence?,
+        reminderRecurrenceTimeMinutes: Int,
+        reminderRecurrenceDayOfWeek: Int,
+        reminderRecurrenceDayOfMonth: Int
     ) -> Unit
 ) {
     val context = LocalContext.current
@@ -125,6 +131,27 @@ fun ReminderConfigDialog(
     var recurrenceDayOfMonth by remember { mutableStateOf(checklist.recurrenceDayOfMonth ?: 1) }
     var showWeekdayMenu by remember { mutableStateOf(false) }
     var showMonthDayMenu by remember { mutableStateOf(false) }
+    var enableRecurringReminder by remember {
+        mutableStateOf(checklist.reminderRecurrenceFrequency != null)
+    }
+    var selectedReminderRecurrence by remember {
+        mutableStateOf(
+            ChecklistRecurrence.values().firstOrNull {
+                it.name == checklist.reminderRecurrenceFrequency
+            } ?: ChecklistRecurrence.DAILY
+        )
+    }
+    var reminderRecurrenceTimeMinutes by remember {
+        mutableStateOf(checklist.reminderRecurrenceTimeMinutes ?: 9 * 60)
+    }
+    var reminderRecurrenceDayOfWeek by remember {
+        mutableStateOf(checklist.reminderRecurrenceDayOfWeek ?: Calendar.MONDAY)
+    }
+    var reminderRecurrenceDayOfMonth by remember {
+        mutableStateOf(checklist.reminderRecurrenceDayOfMonth ?: 1)
+    }
+    var showReminderWeekdayMenu by remember { mutableStateOf(false) }
+    var showReminderMonthDayMenu by remember { mutableStateOf(false) }
     val weekdays = remember {
         val names = DateFormatSymbols.getInstance(Locale.getDefault()).shortWeekdays
         (Calendar.SUNDAY..Calendar.SATURDAY).map { it to names[it] }
@@ -133,6 +160,15 @@ fun ReminderConfigDialog(
         val time = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, recurrenceTimeMinutes / 60)
             set(Calendar.MINUTE, recurrenceTimeMinutes % 60)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.time
+        android.text.format.DateFormat.getTimeFormat(context).format(time)
+    }
+    val reminderRecurrenceTimeLabel = remember(reminderRecurrenceTimeMinutes, context) {
+        val time = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, reminderRecurrenceTimeMinutes / 60)
+            set(Calendar.MINUTE, reminderRecurrenceTimeMinutes % 60)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }.time
@@ -153,6 +189,9 @@ fun ReminderConfigDialog(
     val backgroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { permissionRefresh++ }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { }
 
     val foregroundLocationLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -292,6 +331,157 @@ fun ReminderConfigDialog(
                                 )
                             }
                         }
+
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.Alarm,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.recurring_reminder_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.recurring_reminder_description),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = enableRecurringReminder,
+                        onCheckedChange = { enableRecurringReminder = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                }
+
+                if (enableRecurringReminder) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        ChecklistRecurrence.values().forEach { frequency ->
+                            FilterChip(
+                                selected = selectedReminderRecurrence == frequency,
+                                onClick = { selectedReminderRecurrence = frequency },
+                                label = {
+                                    Text(
+                                        when (frequency) {
+                                            ChecklistRecurrence.DAILY -> stringResource(R.string.recurrence_daily)
+                                            ChecklistRecurrence.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                                            ChecklistRecurrence.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    if (selectedReminderRecurrence == ChecklistRecurrence.WEEKLY) {
+                        Box {
+                            OutlinedButton(onClick = { showReminderWeekdayMenu = true }) {
+                                Text(
+                                    stringResource(
+                                        R.string.recurrence_weekday,
+                                        weekdays.first { it.first == reminderRecurrenceDayOfWeek }.second
+                                    )
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = showReminderWeekdayMenu,
+                                onDismissRequest = { showReminderWeekdayMenu = false }
+                            ) {
+                                weekdays.forEach { (day, label) ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            reminderRecurrenceDayOfWeek = day
+                                            showReminderWeekdayMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    } else if (selectedReminderRecurrence == ChecklistRecurrence.MONTHLY) {
+                        Box {
+                            OutlinedButton(onClick = { showReminderMonthDayMenu = true }) {
+                                Text(
+                                    stringResource(
+                                        R.string.recurrence_month_day,
+                                        reminderRecurrenceDayOfMonth
+                                    )
+                                )
+                            }
+                            DropdownMenu(
+                                modifier = Modifier
+                                    .heightIn(max = 320.dp)
+                                    .statusBarsPadding()
+                                    .navigationBarsPadding(),
+                                expanded = showReminderMonthDayMenu,
+                                onDismissRequest = { showReminderMonthDayMenu = false }
+                            ) {
+                                (1..31).forEach { day ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.recurrence_month_day, day)) },
+                                        onClick = {
+                                            reminderRecurrenceDayOfMonth = day
+                                            showReminderMonthDayMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = stringResource(R.string.recurrence_month_end_note),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            TimePickerDialog(
+                                context,
+                                { _, selectedHour, selectedMinute ->
+                                    reminderRecurrenceTimeMinutes = selectedHour * 60 + selectedMinute
+                                },
+                                reminderRecurrenceTimeMinutes / 60,
+                                reminderRecurrenceTimeMinutes % 60,
+                                android.text.format.DateFormat.is24HourFormat(context)
+                            ).show()
+                        }
+                    ) {
+                        Icon(Icons.Default.Alarm, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            stringResource(
+                                R.string.recurring_reminder_time,
+                                reminderRecurrenceTimeLabel
+                            )
+                        )
                     }
                 }
 
@@ -597,6 +787,15 @@ fun ReminderConfigDialog(
         val confirmButton: @Composable () -> Unit = {
             Button(
                 onClick = {
+                    if (enableRecurringReminder &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
                     val finalReminderTime = if (enableTimeReminder) selectedTimestamp else null
                     val lat = if (enableGeofence) latitudeText.toDoubleOrNull() else null
                     val lng = if (enableGeofence) longitudeText.toDoubleOrNull() else null
@@ -612,7 +811,11 @@ fun ReminderConfigDialog(
                         if (enableRecurrence) selectedRecurrence else null,
                         recurrenceTimeMinutes,
                         recurrenceDayOfWeek,
-                        recurrenceDayOfMonth
+                        recurrenceDayOfMonth,
+                        if (enableRecurringReminder) selectedReminderRecurrence else null,
+                        reminderRecurrenceTimeMinutes,
+                        reminderRecurrenceDayOfWeek,
+                        reminderRecurrenceDayOfMonth
                     )
                     onDismiss()
                 },
@@ -727,7 +930,7 @@ private fun ReminderConfigDialogPreview() {
                 recurrenceDayOfMonth = 1
             ),
             onDismiss = {},
-            onSaveReminders = { _, _, _, _, _, _, _, _, _ -> }
+            onSaveReminders = { _, _, _, _, _, _, _, _, _, _, _, _, _ -> }
         )
     }
 }

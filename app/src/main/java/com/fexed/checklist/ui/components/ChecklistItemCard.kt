@@ -58,9 +58,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.fexed.checklist.R
 import coil.compose.AsyncImage
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.ui.theme.ChecklistTheme
+import com.fexed.checklist.util.RecurrenceSchedule
 import java.io.File
 
 @Composable
@@ -198,6 +200,11 @@ fun ChecklistItemCard(
                 }
 
                 item.dueAt?.let { dueAt ->
+                    val recurrence = item.dueRecurrenceFrequency
+                        ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+                    val displayedDueAt = recurrence?.let {
+                        RecurrenceSchedule.nextOccurrenceAtOrAfter(dueAt, System.currentTimeMillis(), it)
+                    } ?: dueAt
                     Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -207,7 +214,7 @@ fun ChecklistItemCard(
                             imageVector = Icons.Default.Event,
                             contentDescription = null,
                             modifier = Modifier.size(14.dp),
-                            tint = if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                            tint = if (displayedDueAt < System.currentTimeMillis() && !item.isCompleted) {
                                 MaterialTheme.colorScheme.error
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -215,14 +222,14 @@ fun ChecklistItemCard(
                         )
                         Text(
                             text = stringResource(
-                                if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                                if (displayedDueAt < System.currentTimeMillis() && !item.isCompleted) {
                                     R.string.item_due_overdue
                                 } else {
                                     R.string.item_due_date_display
                                 },
                                 DateUtils.formatDateTime(
                                     context,
-                                    dueAt,
+                                    displayedDueAt,
                                     DateUtils.FORMAT_SHOW_DATE or
                                         DateUtils.FORMAT_ABBREV_MONTH or
                                         DateUtils.FORMAT_SHOW_TIME or
@@ -230,11 +237,25 @@ fun ChecklistItemCard(
                                 )
                             ),
                             style = MaterialTheme.typography.labelMedium,
-                            color = if (dueAt < System.currentTimeMillis() && !item.isCompleted) {
+                            color = if (displayedDueAt < System.currentTimeMillis() && !item.isCompleted) {
                                 MaterialTheme.colorScheme.error
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             }
+                        )
+                    }
+                    recurrence?.let {
+                        Text(
+                            text = stringResource(
+                                R.string.item_due_recurrence_summary,
+                                when (it) {
+                                    ChecklistRecurrence.DAILY -> stringResource(R.string.recurrence_daily)
+                                    ChecklistRecurrence.WEEKLY -> stringResource(R.string.recurrence_weekly)
+                                    ChecklistRecurrence.MONTHLY -> stringResource(R.string.recurrence_monthly)
+                                }
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

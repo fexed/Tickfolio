@@ -35,7 +35,11 @@ data class ChecklistRecord(
     val recurrenceTimeMinutes: Int?,
     val recurrenceDayOfWeek: Int?,
     val recurrenceDayOfMonth: Int?,
-    val recurrenceNextAt: Long?
+    val recurrenceNextAt: Long?,
+    val reminderRecurrenceFrequency: String? = null,
+    val reminderRecurrenceTimeMinutes: Int? = null,
+    val reminderRecurrenceDayOfWeek: Int? = null,
+    val reminderRecurrenceDayOfMonth: Int? = null
 ) {
     companion object {
         fun from(checklist: Checklist) = ChecklistRecord(
@@ -55,7 +59,11 @@ data class ChecklistRecord(
             recurrenceTimeMinutes = checklist.recurrenceTimeMinutes,
             recurrenceDayOfWeek = checklist.recurrenceDayOfWeek,
             recurrenceDayOfMonth = checklist.recurrenceDayOfMonth,
-            recurrenceNextAt = checklist.recurrenceNextAt
+            recurrenceNextAt = checklist.recurrenceNextAt,
+            reminderRecurrenceFrequency = checklist.reminderRecurrenceFrequency,
+            reminderRecurrenceTimeMinutes = checklist.reminderRecurrenceTimeMinutes,
+            reminderRecurrenceDayOfWeek = checklist.reminderRecurrenceDayOfWeek,
+            reminderRecurrenceDayOfMonth = checklist.reminderRecurrenceDayOfMonth
         )
     }
 }
@@ -74,7 +82,8 @@ data class ItemRecord(
     val completedChecks: Int,
     val position: Int,
     val createdAt: Long,
-    val dueAt: Long? = null
+    val dueAt: Long? = null,
+    val dueRecurrenceFrequency: String? = null
 ) {
     companion object {
         fun from(item: ChecklistItem, checklistSyncId: String) = ItemRecord(
@@ -91,7 +100,8 @@ data class ItemRecord(
             completedChecks = item.completedChecks,
             position = item.position,
             createdAt = item.createdAt,
-            dueAt = item.dueAt
+            dueAt = item.dueAt,
+            dueRecurrenceFrequency = item.dueRecurrenceFrequency
         )
     }
 }

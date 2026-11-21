@@ -5,6 +5,22 @@ import java.util.Calendar
 
 object RecurrenceSchedule {
 
+    fun nextOccurrenceAtOrAfter(
+        anchorAt: Long,
+        now: Long,
+        frequency: ChecklistRecurrence
+    ): Long {
+        if (anchorAt > now) return anchorAt
+        val anchor = Calendar.getInstance().apply { timeInMillis = anchorAt }
+        return nextOccurrenceAfter(
+            previousOccurrence = anchorAt,
+            now = now,
+            frequency = frequency,
+            timeMinutes = anchor.get(Calendar.HOUR_OF_DAY) * 60 + anchor.get(Calendar.MINUTE),
+            dayOfMonth = anchor.get(Calendar.DAY_OF_MONTH)
+        )
+    }
+
     fun firstOccurrenceAfter(
         now: Long,
         frequency: ChecklistRecurrence,

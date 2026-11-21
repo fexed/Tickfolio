@@ -136,7 +136,11 @@ class OverviewViewModel(
         recurrence: ChecklistRecurrence?,
         recurrenceTimeMinutes: Int,
         recurrenceDayOfWeek: Int,
-        recurrenceDayOfMonth: Int
+        recurrenceDayOfMonth: Int,
+        reminderRecurrence: ChecklistRecurrence?,
+        reminderRecurrenceTimeMinutes: Int,
+        reminderRecurrenceDayOfWeek: Int,
+        reminderRecurrenceDayOfMonth: Int
     ) {
         viewModelScope.launch {
             repository.updateChecklistReminders(
@@ -149,7 +153,11 @@ class OverviewViewModel(
                 recurrence = recurrence,
                 recurrenceTimeMinutes = recurrenceTimeMinutes,
                 recurrenceDayOfWeek = recurrenceDayOfWeek,
-                recurrenceDayOfMonth = recurrenceDayOfMonth
+                recurrenceDayOfMonth = recurrenceDayOfMonth,
+                reminderRecurrence = reminderRecurrence,
+                reminderRecurrenceTimeMinutes = reminderRecurrenceTimeMinutes,
+                reminderRecurrenceDayOfWeek = reminderRecurrenceDayOfWeek,
+                reminderRecurrenceDayOfMonth = reminderRecurrenceDayOfMonth
             )
         }
     }

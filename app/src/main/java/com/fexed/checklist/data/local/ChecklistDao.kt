@@ -32,6 +32,10 @@ interface ChecklistDao {
     @Query("SELECT * FROM checklists WHERE id = :id")
     suspend fun getChecklistForWidget(id: Long): ChecklistWithItems?
 
+    @Transaction
+    @Query("SELECT * FROM checklists WHERE id = :id")
+    suspend fun getChecklistWithItemsById(id: Long): ChecklistWithItems?
+
     @Query("SELECT * FROM checklists WHERE id = :id")
     suspend fun getChecklistById(id: Long): Checklist?
 
@@ -61,6 +65,15 @@ interface ChecklistDao {
 
     @Update
     suspend fun updateChecklist(checklist: Checklist)
+
+    @Query("UPDATE checklists SET reminderRecurrenceNextAt = :nextAt WHERE id = :checklistId")
+    suspend fun updateReminderRecurrenceNextAt(checklistId: Long, nextAt: Long): Int
+
+    @Query(
+        """UPDATE checklists SET reminderRecurrenceNextAt = :nextAt
+            WHERE id = :checklistId AND reminderRecurrenceNextAt = :expectedNextAt"""
+    )
+    suspend fun advanceReminderRecurrence(checklistId: Long, expectedNextAt: Long, nextAt: Long): Int
 
     @Delete
     suspend fun deleteChecklist(checklist: Checklist)

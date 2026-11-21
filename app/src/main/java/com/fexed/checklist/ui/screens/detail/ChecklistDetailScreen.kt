@@ -132,14 +132,7 @@ fun ChecklistDetailScreen(
             coroutineScope.launch {
                 val dueItems = app.database.checklistDao().getItemsWithDueDates()
                 withContext(Dispatchers.IO) {
-                    dueItems
-                        .filter {
-                            !it.isCompleted && it.dueAt != null &&
-                                it.dueNotificationSentAt != it.dueAt
-                        }
-                        .forEach { item ->
-                            ItemDueDateScheduler.schedule(context, item.syncId, item.dueAt!!)
-                        }
+                    ItemDueDateScheduler.reconcile(context, dueItems)
                 }
             }
         }
@@ -639,8 +632,16 @@ fun ChecklistDetailScreen(
             tagColors = uiState.tagColors,
             onTagColorChange = viewModel::setTagColor,
             onDismiss = { showAddItemSheet = false },
-            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt ->
-                viewModel.addItem(title, description, tags, imageUri, requiredChecks, dueAt)
+            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt, dueRecurrenceFrequency ->
+                viewModel.addItem(
+                    title,
+                    description,
+                    tags,
+                    imageUri,
+                    requiredChecks,
+                    dueAt,
+                    dueRecurrenceFrequency
+                )
                 requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()
@@ -659,8 +660,17 @@ fun ChecklistDetailScreen(
             tagColors = uiState.tagColors,
             onTagColorChange = viewModel::setTagColor,
             onDismiss = { editingItem = null },
-            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt ->
-                viewModel.updateItem(item, title, description, tags, imageUri, requiredChecks, dueAt)
+            onConfirm = { title, description, tags, imageUri, requiredChecks, dueAt, dueRecurrenceFrequency ->
+                viewModel.updateItem(
+                    item,
+                    title,
+                    description,
+                    tags,
+                    imageUri,
+                    requiredChecks,
+                    dueAt,
+                    dueRecurrenceFrequency
+                )
                 requestDueDateNotificationPermissionIfNeeded(dueAt)
                 coroutineScope.launch {
                     bottomSheetState.hide()
@@ -726,7 +736,9 @@ fun ChecklistDetailScreen(
             checklist = checklist,
             onDismiss = { showReminderDialog = false },
             onSaveReminders = { reminderTime, geofenceLat, geofenceLng, geofenceRadius, geofenceName,
-                                recurrence, recurrenceTimeMinutes, recurrenceDayOfWeek, recurrenceDayOfMonth ->
+                                recurrence, recurrenceTimeMinutes, recurrenceDayOfWeek, recurrenceDayOfMonth,
+                                reminderRecurrence, reminderRecurrenceTimeMinutes,
+                                reminderRecurrenceDayOfWeek, reminderRecurrenceDayOfMonth ->
                 // Update Alarm
                 if (reminderTime != null) {
                     ChecklistAlarmReceiver.scheduleAlarm(
@@ -761,7 +773,11 @@ fun ChecklistDetailScreen(
                     recurrence = recurrence,
                     recurrenceTimeMinutes = recurrenceTimeMinutes,
                     recurrenceDayOfWeek = recurrenceDayOfWeek,
-                    recurrenceDayOfMonth = recurrenceDayOfMonth
+                    recurrenceDayOfMonth = recurrenceDayOfMonth,
+                    reminderRecurrence = reminderRecurrence,
+                    reminderRecurrenceTimeMinutes = reminderRecurrenceTimeMinutes,
+                    reminderRecurrenceDayOfWeek = reminderRecurrenceDayOfWeek,
+                    reminderRecurrenceDayOfMonth = reminderRecurrenceDayOfMonth
                 )
             }
         )

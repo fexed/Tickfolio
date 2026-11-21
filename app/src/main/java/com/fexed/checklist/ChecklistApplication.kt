@@ -7,6 +7,7 @@ import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.reminder.GeofenceManager
 import com.fexed.checklist.data.reminder.ItemDueDateScheduler
+import com.fexed.checklist.data.reminder.RecurringChecklistReminderScheduler
 import com.fexed.checklist.data.recurrence.RecurringChecklistScheduler
 import com.fexed.checklist.data.sync.DriveSyncScheduler
 import com.fexed.checklist.data.repository.ChecklistRepository
@@ -62,6 +63,17 @@ class ChecklistApplication : Application() {
                     ItemDueDateScheduler.reconcile(
                         this@ChecklistApplication,
                         database.checklistDao().getItemsWithDueDates()
+                    )
+                }
+        }
+        applicationScope.launch {
+            database.invalidationTracker
+                .createFlow("checklists", "checklist_items")
+                .debounce(500)
+                .collect {
+                    RecurringChecklistReminderScheduler.reconcile(
+                        this@ChecklistApplication,
+                        database.checklistDao().getAllChecklistsForWidget()
                     )
                 }
         }

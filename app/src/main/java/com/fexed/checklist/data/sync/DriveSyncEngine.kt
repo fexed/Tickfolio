@@ -5,9 +5,11 @@ import androidx.room.withTransaction
 import com.fexed.checklist.data.local.ChecklistDatabase
 import com.fexed.checklist.data.model.Checklist
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.SyncTombstone
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.util.ImageStorageHelper
+import com.fexed.checklist.util.RecurrenceSchedule
 import com.google.gson.Gson
 import java.io.File
 import java.io.IOException
@@ -166,6 +168,16 @@ class DriveSyncEngine(
                     recurrenceDayOfWeek = record.recurrenceDayOfWeek,
                     recurrenceDayOfMonth = record.recurrenceDayOfMonth,
                     recurrenceNextAt = record.recurrenceNextAt,
+                    reminderRecurrenceFrequency = record.reminderRecurrenceFrequency,
+                    reminderRecurrenceTimeMinutes = record.reminderRecurrenceTimeMinutes,
+                    reminderRecurrenceDayOfWeek = record.reminderRecurrenceDayOfWeek,
+                    reminderRecurrenceDayOfMonth = record.reminderRecurrenceDayOfMonth,
+                    reminderRecurrenceNextAt = existing?.takeIf {
+                        it.reminderRecurrenceFrequency == record.reminderRecurrenceFrequency &&
+                            it.reminderRecurrenceTimeMinutes == record.reminderRecurrenceTimeMinutes &&
+                            it.reminderRecurrenceDayOfWeek == record.reminderRecurrenceDayOfWeek &&
+                            it.reminderRecurrenceDayOfMonth == record.reminderRecurrenceDayOfMonth
+                    }?.reminderRecurrenceNextAt ?: nextReminderOccurrence(record, System.currentTimeMillis()),
                     syncId = record.syncId,
                     updatedAt = record.updatedAt
                 )
@@ -205,7 +217,8 @@ class DriveSyncEngine(
                     updatedAt = record.updatedAt,
                     dueAt = record.dueAt,
                     dueNotificationSentAt = existing?.dueNotificationSentAt
-                        ?.takeIf { it == record.dueAt }
+                        ?.takeIf { it == record.dueAt },
+                    dueRecurrenceFrequency = record.dueRecurrenceFrequency
                 )
                 if (existing == null) dao.insertItem(item)
                 else if (existing != item) dao.updateItem(item)
@@ -237,6 +250,22 @@ class DriveSyncEngine(
             tagColors = backup.tagColors.orEmpty().toSortedMap()
         )
         return gson.toJson(normalize(left)) == gson.toJson(normalize(right))
+    }
+
+    private fun nextReminderOccurrence(record: ChecklistRecord, now: Long): Long? {
+        val frequency = record.reminderRecurrenceFrequency
+            ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+            ?: return null
+        val timeMinutes = record.reminderRecurrenceTimeMinutes ?: return null
+        val dayOfWeek = record.reminderRecurrenceDayOfWeek ?: return null
+        val dayOfMonth = record.reminderRecurrenceDayOfMonth ?: return null
+        return RecurrenceSchedule.firstOccurrenceAfter(
+            now = now,
+            frequency = frequency,
+            timeMinutes = timeMinutes,
+            dayOfWeek = dayOfWeek,
+            dayOfMonth = dayOfMonth
+        )
     }
 
     private data class LocalState(

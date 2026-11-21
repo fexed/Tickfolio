@@ -6,7 +6,9 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.fexed.checklist.data.model.ChecklistRecurrence
 import com.fexed.checklist.data.model.ChecklistItem
+import com.fexed.checklist.util.RecurrenceSchedule
 import java.util.concurrent.TimeUnit
 
 object ItemDueDateScheduler {
@@ -18,37 +20,72 @@ object ItemDueDateScheduler {
     fun reconcile(context: Context, items: List<ChecklistItem>) {
         val workManager = WorkManager.getInstance(context.applicationContext)
         val workInfos: List<WorkInfo> = workManager.getWorkInfosByTag(WORK_TAG).get()
-        val desiredDueDates = items
-            .filter { !it.isCompleted && it.dueAt != null && it.dueNotificationSentAt != it.dueAt }
-            .associate { it.syncId to it.dueAt!! }
+        val now = System.currentTimeMillis()
+        val itemsBySyncId = items.associateBy { it.syncId }
+        val desiredDueDates = items.mapNotNull { item ->
+            if (item.isCompleted) return@mapNotNull null
+            val dueAt = item.dueAt ?: return@mapNotNull null
+            val recurrence = item.dueRecurrenceFrequency
+                ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+            if (recurrence == null && item.dueNotificationSentAt == dueAt) return@mapNotNull null
+            val scheduledAt = if (recurrence == null) {
+                dueAt
+            } else {
+                RecurrenceSchedule.nextOccurrenceAtOrAfter(dueAt, now, recurrence)
+            }
+            item.syncId to scheduledAt
+        }.toMap()
         val activeWork = workInfos
             .filter { it.state == WorkInfo.State.ENQUEUED || it.state == WorkInfo.State.RUNNING }
             .mapNotNull { info -> itemSyncId(info)?.let { it to info } }
-            .toMap()
+            .groupBy({ it.first }, { it.second })
 
-        workInfos.mapNotNull(::itemSyncId)
+        (workInfos.mapNotNull(::itemSyncId) + desiredDueDates.keys)
             .distinct()
-            .filter { syncId ->
-                val info = activeWork[syncId]
-                info == null || desiredDueDates[syncId] != info?.let(::dueAt)
+            .forEach { syncId ->
+                val desiredDueAt = desiredDueDates[syncId]
+                val item = itemsBySyncId[syncId]
+                val hasValidWork = item != null && activeWork[syncId].orEmpty().any { info ->
+                    val scheduledAt = info.let(::dueAt) ?: return@any false
+                    val recurrence = item.dueRecurrenceFrequency
+                        ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+                    if (recurrence == null) {
+                        item.dueAt == scheduledAt
+                    } else {
+                        nextRecurringOccurrence(item, scheduledAt - 1L) == scheduledAt
+                    }
+                }
+                if (desiredDueAt == null) {
+                    workManager.cancelUniqueWork(workName(syncId))
+                    return@forEach
+                }
+                if (hasValidWork) return@forEach
+
+                workManager.cancelUniqueWork(workName(syncId))
+                workManager.enqueueUniqueWork(
+                    workName(syncId),
+                    ExistingWorkPolicy.REPLACE,
+                    buildWorkRequest(syncId, desiredDueAt)
+                )
             }
-            .forEach { syncId -> workManager.cancelUniqueWork(workName(syncId)) }
-
-        desiredDueDates.forEach { (syncId, dueAt) ->
-            val existing = activeWork[syncId]
-            if (existing?.let(::dueAt) == dueAt) return@forEach
-
-            workManager.enqueueUniqueWork(
-                workName(syncId),
-                ExistingWorkPolicy.REPLACE,
-                buildWorkRequest(syncId, dueAt)
-            )
-        }
     }
 
     fun schedule(context: Context, syncId: String, dueAt: Long) {
         WorkManager.getInstance(context.applicationContext)
             .enqueueUniqueWork(workName(syncId), ExistingWorkPolicy.REPLACE, buildWorkRequest(syncId, dueAt))
+    }
+
+    fun scheduleNext(context: Context, syncId: String, dueAt: Long) {
+        WorkManager.getInstance(context.applicationContext)
+            .enqueueUniqueWork(workName(syncId), ExistingWorkPolicy.APPEND_OR_REPLACE, buildWorkRequest(syncId, dueAt))
+    }
+
+    fun nextRecurringOccurrence(item: ChecklistItem, now: Long): Long? {
+        val dueAt = item.dueAt ?: return null
+        val frequency = item.dueRecurrenceFrequency
+            ?.let { name -> ChecklistRecurrence.values().firstOrNull { it.name == name } }
+            ?: return null
+        return RecurrenceSchedule.nextOccurrenceAtOrAfter(dueAt, now, frequency)
     }
 
     private fun buildWorkRequest(syncId: String, dueAt: Long) =

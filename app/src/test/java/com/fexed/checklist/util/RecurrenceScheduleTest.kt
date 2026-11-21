@@ -84,6 +84,34 @@ class RecurrenceScheduleTest {
         assertEquals(timestamp(2025, Calendar.MARCH, 31, 9, 0), result)
     }
 
+    @Test
+    fun anchoredMonthlyReminderKeepsTheOriginalDayAcrossShortMonths() = withUtc {
+        val anchor = timestamp(2025, Calendar.JANUARY, 31, 9, 0)
+        val now = timestamp(2025, Calendar.FEBRUARY, 1, 8, 0)
+
+        val result = RecurrenceSchedule.nextOccurrenceAtOrAfter(
+            anchorAt = anchor,
+            now = now,
+            frequency = ChecklistRecurrence.MONTHLY
+        )
+
+        assertEquals(timestamp(2025, Calendar.FEBRUARY, 28, 9, 0), result)
+    }
+
+    @Test
+    fun anchoredWeeklyReminderKeepsItsWeekday() = withUtc {
+        val anchor = timestamp(2025, Calendar.JANUARY, 3, 9, 0)
+        val now = timestamp(2025, Calendar.JANUARY, 4, 8, 0)
+
+        val result = RecurrenceSchedule.nextOccurrenceAtOrAfter(
+            anchorAt = anchor,
+            now = now,
+            frequency = ChecklistRecurrence.WEEKLY
+        )
+
+        assertEquals(timestamp(2025, Calendar.JANUARY, 10, 9, 0), result)
+    }
+
     private fun timestamp(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long =
         Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
             clear()

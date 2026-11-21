@@ -31,6 +31,11 @@ data class Checklist(
     val recurrenceDayOfWeek: Int? = null,
     val recurrenceDayOfMonth: Int? = null,
     val recurrenceNextAt: Long? = null,
+    val reminderRecurrenceFrequency: String? = null,
+    val reminderRecurrenceTimeMinutes: Int? = null,
+    val reminderRecurrenceDayOfWeek: Int? = null,
+    val reminderRecurrenceDayOfMonth: Int? = null,
+    val reminderRecurrenceNextAt: Long? = null,
     @ColumnInfo(defaultValue = "''")
     val syncId: String = UUID.randomUUID().toString(),
     @ColumnInfo(defaultValue = "0")
