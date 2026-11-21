@@ -8,6 +8,10 @@ val enableGoogleDrive = providers.gradleProperty("enableGoogleDrive")
     .map { it.toBoolean() }
     .getOrElse(false)
 
+val enableGoogleDriveInDebug = providers.gradleProperty("enableGoogleDriveInDebug")
+    .map { it.toBoolean() }
+    .getOrElse(false)
+
 android {
     namespace = "com.fexed.checklist"
     compileSdk {
@@ -21,13 +25,17 @@ android {
         versionCode = 3
         versionName = "1.0"
 
-        buildConfigField("boolean", "GOOGLE_DRIVE_ENABLED", enableGoogleDrive.toString())
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+            buildConfigField("boolean", "GOOGLE_DRIVE_ENABLED", enableGoogleDriveInDebug.toString())
+        }
         release {
+            buildConfigField("boolean", "GOOGLE_DRIVE_ENABLED", enableGoogleDrive.toString())
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
