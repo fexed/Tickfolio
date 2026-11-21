@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Today
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -86,6 +88,8 @@ fun OverviewScreen(
     onToggleDriveBackup: (Boolean) -> Unit,
     onReconnectDrive: () -> Unit,
     onOpenChecklist: (Long) -> Unit,
+    onOpenAgenda: () -> Unit,
+    onOpenMyDay: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -175,6 +179,20 @@ fun OverviewScreen(
                             )
                         }
                     } else {
+                        IconButton(onClick = onOpenMyDay) {
+                            Icon(
+                                imageVector = Icons.Default.Today,
+                                contentDescription = stringResource(R.string.my_day_open_desc),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
+                        IconButton(onClick = onOpenAgenda) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = stringResource(R.string.agenda_open_desc),
+                                tint = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                         IconButton(onClick = {
                             searchActive = !searchActive
                             if (!searchActive) {

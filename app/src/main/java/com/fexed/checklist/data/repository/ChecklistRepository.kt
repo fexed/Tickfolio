@@ -8,12 +8,14 @@ import com.fexed.checklist.data.model.ChecklistWithItems
 import com.fexed.checklist.data.model.normalizeTags
 import com.fexed.checklist.data.preferences.AppPreferences
 import com.fexed.checklist.data.preferences.ChecklistSortOption
+import com.fexed.checklist.data.preferences.MyDaySelection
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.TagColorRecord
 import com.fexed.checklist.data.preferences.ThemeMode
 import com.fexed.checklist.data.preferences.UserPreferences
 import com.fexed.checklist.util.RecurrenceSchedule
 import java.util.Calendar
+import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import java.util.UUID
@@ -25,6 +27,7 @@ class ChecklistRepository(
     val allChecklists: Flow<List<ChecklistWithItems>> = checklistDao.getAllChecklistsWithItems()
 
     val userPreferences: Flow<UserPreferences> = appPreferences.userPreferencesFlow
+    val myDaySelection: Flow<MyDaySelection> = appPreferences.myDaySelectionFlow
 
     fun getChecklist(id: Long): Flow<ChecklistWithItems?> {
         return checklistDao.getChecklistWithItems(id)
@@ -265,6 +268,14 @@ class ChecklistRepository(
 
     suspend fun setHandwritingFontEnabled(enabled: Boolean) {
         appPreferences.setHandwritingFontEnabled(enabled)
+    }
+
+    suspend fun setMyDayItemSelected(date: LocalDate, itemSyncId: String, selected: Boolean) {
+        appPreferences.setMyDayItemSelected(date, itemSyncId, selected)
+    }
+
+    suspend fun toggleMyDayItemSelection(date: LocalDate, itemSyncId: String) {
+        appPreferences.toggleMyDayItemSelection(date, itemSyncId)
     }
 
     suspend fun setChecklistSortOption(option: ChecklistSortOption) {

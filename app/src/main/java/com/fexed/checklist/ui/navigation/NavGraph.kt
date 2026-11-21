@@ -17,15 +17,23 @@ import com.fexed.checklist.data.local.ChecklistDao
 import com.fexed.checklist.data.preferences.StartPageOption
 import com.fexed.checklist.data.preferences.UserPreferences
 import com.fexed.checklist.data.repository.ChecklistRepository
+import com.fexed.checklist.ui.screens.agenda.AgendaScreen
+import com.fexed.checklist.ui.screens.agenda.AgendaViewModel
+import com.fexed.checklist.ui.screens.agenda.AgendaViewModelFactory
 import com.fexed.checklist.ui.screens.detail.ChecklistDetailScreen
 import com.fexed.checklist.ui.screens.detail.ChecklistDetailViewModel
 import com.fexed.checklist.ui.screens.detail.ChecklistDetailViewModelFactory
 import com.fexed.checklist.ui.screens.overview.OverviewScreen
 import com.fexed.checklist.ui.screens.overview.OverviewViewModel
 import com.fexed.checklist.ui.screens.overview.OverviewViewModelFactory
+import com.fexed.checklist.ui.screens.myday.MyDayScreen
+import com.fexed.checklist.ui.screens.myday.MyDayViewModel
+import com.fexed.checklist.ui.screens.myday.MyDayViewModelFactory
 
 sealed class Screen(val route: String) {
     object Overview : Screen("overview")
+    object Agenda : Screen("agenda")
+    object MyDay : Screen("my_day")
     object Detail : Screen("detail/{checklistId}") {
         fun createRoute(checklistId: Long) = "detail/$checklistId"
     }
@@ -75,6 +83,34 @@ fun ChecklistNavGraph(
                 viewModel = overviewViewModel,
                 onToggleDriveBackup = onToggleDriveBackup,
                 onReconnectDrive = onReconnectDrive,
+                onOpenChecklist = { checklistId ->
+                    navController.navigate(Screen.Detail.createRoute(checklistId))
+                },
+                onOpenAgenda = { navController.navigate(Screen.Agenda.route) },
+                onOpenMyDay = { navController.navigate(Screen.MyDay.route) }
+            )
+        }
+
+        composable(route = Screen.MyDay.route) {
+            val myDayViewModel: MyDayViewModel = viewModel(
+                factory = MyDayViewModelFactory(repository)
+            )
+            MyDayScreen(
+                viewModel = myDayViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onOpenChecklist = { checklistId ->
+                    navController.navigate(Screen.Detail.createRoute(checklistId))
+                }
+            )
+        }
+
+        composable(route = Screen.Agenda.route) {
+            val agendaViewModel: AgendaViewModel = viewModel(
+                factory = AgendaViewModelFactory(repository)
+            )
+            AgendaScreen(
+                viewModel = agendaViewModel,
+                onNavigateBack = { navController.popBackStack() },
                 onOpenChecklist = { checklistId ->
                     navController.navigate(Screen.Detail.createRoute(checklistId))
                 }

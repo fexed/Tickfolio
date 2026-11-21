@@ -54,6 +54,35 @@
     <string name="empty_checklists_found_subtitle">Try searching for something else</string>
     <string name="btn_new_checklist">New Checklist</string>
     <string name="btn_load_sample_data">Load Sample Checklists</string>
+    <string name="agenda_title">Agenda</string>
+    <string name="agenda_open_desc">Open agenda</string>
+    <string name="my_day_title">My Day</string>
+    <string name="my_day_open_desc">Open My Day</string>
+    <string name="my_day_add_items">Add tasks</string>
+    <string name="my_day_add_items_desc">Add tasks to My Day</string>
+    <string name="my_day_date">Today · %1$s</string>
+    <string name="my_day_progress">%1$d of %2$d tasks complete</string>
+    <string name="my_day_overdue">Overdue</string>
+    <string name="my_day_due_today">Due today · %1$s</string>
+    <string name="my_day_due_date">Due %1$s</string>
+    <string name="my_day_due_overdue">Overdue · %1$s</string>
+    <string name="my_day_focus_items">Added to My Day</string>
+    <string name="my_day_empty_title">Your day is clear</string>
+    <string name="my_day_empty_description">Tasks due today and overdue tasks appear here. Add a task from any checklist to focus on it.</string>
+    <string name="my_day_add_dialog_title">Add tasks to My Day</string>
+    <string name="my_day_no_available_items">No other incomplete tasks are available to add.</string>
+    <string name="my_day_remove_desc">Remove from My Day</string>
+    <string name="agenda_today">Today</string>
+    <string name="agenda_previous_month">Previous month</string>
+    <string name="agenda_next_month">Next month</string>
+    <string name="agenda_select_date_desc">Select %1$s</string>
+    <string name="agenda_events_for_date">Events for %1$s</string>
+    <string name="agenda_item_due">Item due</string>
+    <string name="agenda_checklist_reminder">Checklist reminder</string>
+    <string name="agenda_overdue">Overdue</string>
+    <string name="agenda_scheduled">Scheduled</string>
+    <string name="agenda_empty_title">Nothing scheduled</string>
+    <string name="agenda_empty_description">Item due dates and checklist reminders will appear here.</string>
 
     <!-- Checklist Card -->
     <string name="menu_reminders_alerts">Reminders &amp; Alerts</string>

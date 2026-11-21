@@ -13,12 +13,18 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "checklist_settings")
 
 data class TagColorRecord(
     val colorArgb: Int,
     val updatedAt: Long
+)
+
+data class MyDaySelection(
+    val dateKey: String?,
+    val itemSyncIds: Set<String>
 )
 
 enum class StartPageOption(val label: String, val description: String) {
@@ -70,6 +76,8 @@ class AppPreferences(private val context: Context) {
         val KEY_CHECKLIST_SORT_OPTION = stringPreferencesKey("checklist_sort_option")
         val KEY_CHECKLIST_SORT_ASCENDING = booleanPreferencesKey("checklist_sort_ascending")
         val KEY_TAG_COLORS = stringPreferencesKey("tag_colors")
+        val KEY_MY_DAY_DATE = stringPreferencesKey("my_day_date")
+        val KEY_MY_DAY_ITEM_SYNC_IDS = stringPreferencesKey("my_day_item_sync_ids")
     }
     private val gson = Gson()
     private val tagColorsType = object : TypeToken<Map<String, TagColorRecord>>() {}.type
@@ -114,6 +122,52 @@ class AppPreferences(private val context: Context) {
                 gson.fromJson<Map<String, TagColorRecord>>(it, tagColorsType).orEmpty()
             }.orEmpty()
         )
+    }
+
+    val myDaySelectionFlow: Flow<MyDaySelection> = context.dataStore.data.map { prefs ->
+        MyDaySelection(
+            dateKey = prefs[KEY_MY_DAY_DATE],
+            itemSyncIds = prefs[KEY_MY_DAY_ITEM_SYNC_IDS]
+                ?.split(',')
+                ?.filter { it.isNotBlank() }
+                ?.toSet()
+                .orEmpty()
+        )
+    }
+
+    suspend fun setMyDayItemSelected(date: LocalDate, itemSyncId: String, selected: Boolean) {
+        require(itemSyncId.isNotBlank()) { "Item sync ID must not be blank" }
+        updateMyDayItemSelection(date.toString(), itemSyncId) { current ->
+            if (selected) current + itemSyncId else current - itemSyncId
+        }
+    }
+
+    suspend fun toggleMyDayItemSelection(date: LocalDate, itemSyncId: String) {
+        require(itemSyncId.isNotBlank()) { "Item sync ID must not be blank" }
+        updateMyDayItemSelection(date.toString(), itemSyncId) { current ->
+            if (itemSyncId in current) current - itemSyncId else current + itemSyncId
+        }
+    }
+
+    private suspend fun updateMyDayItemSelection(
+        dateKey: String,
+        itemSyncId: String,
+        transform: (Set<String>) -> Set<String>
+    ) {
+        context.dataStore.edit { prefs ->
+            val current = if (prefs[KEY_MY_DAY_DATE] == dateKey) {
+                prefs[KEY_MY_DAY_ITEM_SYNC_IDS]
+                    ?.split(',')
+                    ?.filter { it.isNotBlank() }
+                    ?.toSet()
+                    .orEmpty()
+            } else {
+                emptySet()
+            }
+            val updated = transform(current)
+            prefs[KEY_MY_DAY_DATE] = dateKey
+            prefs[KEY_MY_DAY_ITEM_SYNC_IDS] = updated.sorted().joinToString(",")
+        }
     }
 
     suspend fun setStartPage(option: StartPageOption) {

@@ -17,6 +17,10 @@ carry the details that make it useful.
   incomplete items; Android notification permission is requested when needed.
 - Repeat checklist and item reminders daily, weekly, or monthly. Reminders pause
   while the checklist or item is complete and resume when it becomes incomplete.
+- Open the monthly agenda to review item due dates, overdue items, and upcoming
+  time-based checklist reminders; tap an entry to open its checklist.
+- Use My Day to focus on overdue and due-today items across checklists, and add
+  personal task selections that remain saved for the day.
 - Search checklists and filter checklist items by text, tag, or completion.
 - Sort checklists by title, due date, last edit, creation date, or last opened
   time in either ascending or descending order; the chosen sort is remembered.
@@ -59,7 +63,7 @@ the ViewModels.
 ```mermaid
 flowchart TD
     Activity[MainActivity] --> Nav[Navigation Compose]
-    Nav --> Screens[Overview and detail screens]
+    Nav --> Screens[Overview, agenda, My Day, and detail screens]
     Screens --> VMs[Screen ViewModels]
     VMs --> Repo[ChecklistRepository]
     Repo --> DAO[ChecklistDao]
@@ -88,10 +92,12 @@ flowchart TD
 - **Data:** Room stores checklist and item records; `ChecklistDao` provides
   observable queries and mutations. `ChecklistRepository` coordinates database
   operations and preferences. DataStore holds the selected launch page, theme,
-  latest-opened checklist, and optional Drive backup settings.
-- **UI:** `OverviewScreen` and `ChecklistDetailScreen` are backed by their own
-  ViewModels. Reusable Compose components live under `ui/components`, with
-  light/dark previews for key UI and the checklist icons.
+  latest-opened checklist, daily My Day selections, and optional Drive backup
+  settings.
+- **UI:** `OverviewScreen`, `AgendaScreen`, `MyDayScreen`, and
+  `ChecklistDetailScreen` are backed by ViewModels. Reusable Compose components
+  live under `ui/components`, with light/dark previews for key UI and the
+  checklist icons.
 - **Reminders and photos:** `ChecklistAlarmReceiver` handles scheduled
   notifications. `GeofenceManager` registers location boundaries with Google
   Play services and `GeofenceBroadcastReceiver` displays proximity
@@ -206,7 +212,7 @@ when there are changes since the previous nightly. The APK is unsigned.
 │       │   │   ├── ui/
 │       │   │   │   ├── components/     # Reusable Compose UI and previews
 │       │   │   │   ├── navigation/
-│       │   │   │   ├── screens/        # Overview, detail, and settings
+│       │   │   │   ├── screens/        # Overview, agenda, My Day, detail, settings
 │       │   │   │   └── theme/          # Paper and parchment color schemes
 │       │   │   └── util/               # Image storage and sample data
 │       │   └── res/

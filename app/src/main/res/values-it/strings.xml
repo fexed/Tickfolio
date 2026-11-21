@@ -54,6 +54,35 @@
     <string name="empty_checklists_found_subtitle">Prova a cercare qualcos\'altro</string>
     <string name="btn_new_checklist">Nuova checklist</string>
     <string name="btn_load_sample_data">Carica checklist di esempio</string>
+    <string name="agenda_title">Agenda</string>
+    <string name="agenda_open_desc">Apri l’agenda</string>
+    <string name="my_day_title">La mia giornata</string>
+    <string name="my_day_open_desc">Apri La mia giornata</string>
+    <string name="my_day_add_items">Aggiungi attività</string>
+    <string name="my_day_add_items_desc">Aggiungi attività alla mia giornata</string>
+    <string name="my_day_date">Oggi · %1$s</string>
+    <string name="my_day_progress">%1$d di %2$d attività completate</string>
+    <string name="my_day_overdue">In ritardo</string>
+    <string name="my_day_due_today">In scadenza oggi · %1$s</string>
+    <string name="my_day_due_date">In scadenza %1$s</string>
+    <string name="my_day_due_overdue">Scaduto · %1$s</string>
+    <string name="my_day_focus_items">Aggiunti alla mia giornata</string>
+    <string name="my_day_empty_title">La tua giornata è libera</string>
+    <string name="my_day_empty_description">Qui appaiono le attività in scadenza oggi e quelle in ritardo. Aggiungi un’attività da qualsiasi checklist per concentrarti su di essa.</string>
+    <string name="my_day_add_dialog_title">Aggiungi attività alla mia giornata</string>
+    <string name="my_day_no_available_items">Non ci sono altre attività incomplete da aggiungere.</string>
+    <string name="my_day_remove_desc">Rimuovi dalla mia giornata</string>
+    <string name="agenda_today">Oggi</string>
+    <string name="agenda_previous_month">Mese precedente</string>
+    <string name="agenda_next_month">Mese successivo</string>
+    <string name="agenda_select_date_desc">Seleziona %1$s</string>
+    <string name="agenda_events_for_date">Eventi per %1$s</string>
+    <string name="agenda_item_due">Scadenza elemento</string>
+    <string name="agenda_checklist_reminder">Promemoria checklist</string>
+    <string name="agenda_overdue">In ritardo</string>
+    <string name="agenda_scheduled">In programma</string>
+    <string name="agenda_empty_title">Nessun evento in programma</string>
+    <string name="agenda_empty_description">Qui appariranno le scadenze degli elementi e i promemoria delle checklist.</string>
 
     <!-- Scheda checklist -->
     <string name="menu_reminders_alerts">Promemoria e avvisi</string>
