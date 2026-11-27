@@ -21,6 +21,8 @@
     <string name="action_close">Chiudi</string>
     <string name="action_clear">Cancella</string>
     <string name="action_done">Fine</string>
+    <string name="action_discard">Scarta</string>
+    <string name="action_keep_editing">Continua a modificare</string>
     <string name="action_back">Indietro</string>
     <string name="action_search">Cerca</string>
     <string name="action_more_options">Altre opzioni</string>
@@ -158,6 +160,8 @@
     <!-- Pannello inferiore: modifica e creazione elemento -->
     <string name="sheet_title_new_item">Nuovo elemento</string>
     <string name="sheet_title_edit_item">Modifica elemento</string>
+    <string name="dialog_title_discard_item_changes">Scartare le modifiche?</string>
+    <string name="dialog_msg_discard_item_changes">Le modifiche a questo elemento andranno perse.</string>
     <string name="label_item_title">Titolo elemento *</string>
     <string name="placeholder_item_title">es. Passaporto, olio motore, pulire i fornelli</string>
     <string name="label_item_description">Descrizione e note (facoltative)</string>

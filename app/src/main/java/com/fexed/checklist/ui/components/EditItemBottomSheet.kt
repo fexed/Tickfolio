@@ -61,6 +61,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,6 +90,7 @@ import com.fexed.checklist.util.ImageStorageHelper
 import java.io.File
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -110,6 +112,7 @@ fun EditItemBottomSheet(
     ) -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var title by remember { mutableStateOf(initialItem?.title ?: "") }
     var description by remember { mutableStateOf(initialItem?.description ?: "") }
     var tagInput by remember { mutableStateOf("") }
@@ -131,6 +134,7 @@ fun EditItemBottomSheet(
     }
 
     var pendingCameraFile by remember { mutableStateOf<File?>(null) }
+    var showDiscardChangesDialog by remember { mutableStateOf(false) }
 
     fun showDueDatePicker() {
         val current = Calendar.getInstance().apply {
@@ -181,17 +185,70 @@ fun EditItemBottomSheet(
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success: Boolean ->
-        if (success && pendingCameraFile != null) {
-            val file = pendingCameraFile!!
-            val savedPath = ImageStorageHelper.saveImageToInternalStorage(context, Uri.fromFile(file))
-            if (file.exists()) file.delete()
-            if (savedPath != null) {
-                if (imageUri != null && imageUri != initialItem?.imageUri) {
-                    ImageStorageHelper.deleteImage(imageUri)
+        val file = pendingCameraFile
+        pendingCameraFile = null
+        if (file != null) {
+            if (success) {
+                val savedPath = ImageStorageHelper.saveImageToInternalStorage(context, Uri.fromFile(file))
+                if (savedPath != null) {
+                    if (imageUri != null && imageUri != initialItem?.imageUri) {
+                        ImageStorageHelper.deleteImage(imageUri)
+                    }
+                    imageUri = savedPath
                 }
-                imageUri = savedPath
             }
+            if (file.exists()) file.delete()
         }
+    }
+
+    fun hasNewItemContent(): Boolean =
+        title.isNotBlank() ||
+            description.isNotBlank() ||
+            tagInput.isNotBlank() ||
+            selectedTags.isNotEmpty() ||
+            imageUri != null ||
+            requiredChecks != "1" ||
+            dueAt != null ||
+            dueRecurrenceFrequency != null
+
+    fun saveItemIfValid(): Boolean {
+        val checkCount = requiredChecks.toIntOrNull()
+        titleError = title.isBlank()
+        requiredChecksError = checkCount == null || checkCount < 1
+        if (titleError || checkCount == null || checkCount < 1) return false
+
+        onConfirm(
+            title.trim(),
+            description.trim(),
+            normalizeTags(selectedTags + tagInput),
+            imageUri,
+            checkCount,
+            dueAt,
+            dueRecurrenceFrequency
+        )
+        return true
+    }
+
+    fun requestDismiss() {
+        if (initialItem != null) {
+            showDiscardChangesDialog = true
+        } else if (!hasNewItemContent()) {
+            pendingCameraFile?.let { if (it.exists()) it.delete() }
+            pendingCameraFile = null
+            onDismiss()
+        } else if (!saveItemIfValid()) {
+            coroutineScope.launch { sheetState.show() }
+        }
+    }
+
+    fun discardEdit() {
+        if (imageUri != initialItem?.imageUri) {
+            ImageStorageHelper.deleteImage(imageUri)
+        }
+        pendingCameraFile?.let { if (it.exists()) it.delete() }
+        pendingCameraFile = null
+        showDiscardChangesDialog = false
+        onDismiss()
     }
 
     val sheetContent: @Composable () -> Unit = {
@@ -599,27 +656,15 @@ fun EditItemBottomSheet(
                     .padding(bottom = 16.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.action_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                TextButton(onClick = ::requestDismiss) {
+                    Text(
+                        stringResource(if (initialItem == null) R.string.action_done else R.string.action_cancel),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = {
-                        val checkCount = requiredChecks.toIntOrNull()
-                        titleError = title.isBlank()
-                        requiredChecksError = checkCount == null || checkCount < 1
-                        if (!titleError && checkCount != null && checkCount > 0) {
-                            onConfirm(
-                                title.trim(),
-                                description.trim(),
-                                normalizeTags(selectedTags + tagInput),
-                                imageUri,
-                                checkCount,
-                                dueAt,
-                                dueRecurrenceFrequency
-                            )
-                        }
-                    },
+                    onClick = { saveItemIfValid() },
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -646,7 +691,7 @@ fun EditItemBottomSheet(
         }
     } else {
         ModalBottomSheet(
-            onDismissRequest = onDismiss,
+            onDismissRequest = ::requestDismiss,
             sheetState = sheetState,
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
@@ -654,6 +699,34 @@ fun EditItemBottomSheet(
         ) {
             sheetContent()
         }
+    }
+
+    if (showDiscardChangesDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDiscardChangesDialog = false
+                coroutineScope.launch { sheetState.show() }
+            },
+            title = { Text(stringResource(R.string.dialog_title_discard_item_changes)) },
+            text = { Text(stringResource(R.string.dialog_msg_discard_item_changes)) },
+            confirmButton = {
+                TextButton(onClick = ::discardEdit) {
+                    Text(stringResource(R.string.action_discard))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDiscardChangesDialog = false
+                        coroutineScope.launch { sheetState.show() }
+                    }
+                ) {
+                    Text(stringResource(R.string.action_keep_editing))
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(20.dp)
+        )
     }
 
     colorPickerTag?.let { tag ->

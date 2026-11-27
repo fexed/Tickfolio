@@ -21,6 +21,8 @@
     <string name="action_close">Close</string>
     <string name="action_clear">Clear</string>
     <string name="action_done">Done</string>
+    <string name="action_discard">Discard</string>
+    <string name="action_keep_editing">Keep editing</string>
     <string name="action_back">Back</string>
     <string name="action_search">Search</string>
     <string name="action_more_options">More options</string>
@@ -158,6 +160,8 @@
     <!-- BottomSheet: Edit / Create Item -->
     <string name="sheet_title_new_item">New Item</string>
     <string name="sheet_title_edit_item">Edit Item</string>
+    <string name="dialog_title_discard_item_changes">Discard changes?</string>
+    <string name="dialog_msg_discard_item_changes">Your changes to this item will be lost.</string>
     <string name="label_item_title">Item Title *</string>
     <string name="placeholder_item_title">e.g. Passport, Engine Oil, Clean Stove</string>
     <string name="label_item_description">Description &amp; Notes (optional)</string>
